@@ -1,4 +1,5 @@
 import DashboardShell from "@/components/DashboardShell";
+import RecentMeetings from "@/components/meetings/RecentMeetings";
 
 export default function Home() {
   return (
@@ -25,6 +26,8 @@ export default function Home() {
           "У каждого направления — свой дашборд: Анализ, Проект, Тестирование, Разработка, ТехЛид.",
         action: "Открыть разделы",
       }}
-    />
+    >
+      <RecentMeetings />
+    </DashboardShell>
   );
 }
