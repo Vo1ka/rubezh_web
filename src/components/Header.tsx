@@ -6,6 +6,9 @@ import { SECTIONS } from "@/lib/sections";
 
 const TABS = [
   { href: "/", label: "Главная" },
+  { href: "/epics", label: "Epic Map" },
+  { href: "/decisions", label: "Решения" },
+  { href: "/documents", label: "Документы" },
   { href: "/meetings", label: "Встречи" },
   ...SECTIONS,
 ];
