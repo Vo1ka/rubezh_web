@@ -2,15 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { SECTIONS } from "@/lib/sections";
 
-const TABS = [
-  { href: "/", label: "Главная" },
-  { href: "/analysis", label: "Анализ" },
-  { href: "/project", label: "Проект" },
-  { href: "/testing", label: "Тестирование" },
-  { href: "/development", label: "Разработка" },
-  { href: "/techlead", label: "ТехЛид" },
-];
+const TABS = [{ href: "/", label: "Главная" }, ...SECTIONS];
 
 export default function Header() {
   const pathname = usePathname();
