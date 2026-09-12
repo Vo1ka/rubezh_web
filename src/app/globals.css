@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+:root {
+  /* Palette */
+  --color-forest-950: #344e41; /* deepest green — titles, secondary text on light */
+  --color-forest-800: #3a5a40; /* dark green — primary surfaces, body text */
+  --color-forest-600: #588157; /* mid green — accents, borders, gradients */
+  --color-sage-400: #a3b18a; /* sage — card/feature surfaces */
+  --color-cream-100: #dad7cd; /* cream — page background, light text on dark */
+
+  /* Semantic tokens */
+  --background: var(--color-cream-100);
+  --foreground: var(--color-forest-800);
+
+  --color-title: var(--color-forest-950);
+  --color-body: var(--color-forest-800);
+
+  --color-header-gradient: linear-gradient(
+    135deg,
+    var(--color-forest-800) 0%,
+    #486e4b 50%,
+    var(--color-forest-600) 100%
+  );
+
+  --color-primary-bg: var(--color-forest-800);
+  --color-primary-text: var(--color-cream-100);
+
+  --color-secondary-bg: var(--color-cream-100);
+  --color-secondary-text: var(--color-forest-950);
+  --color-secondary-border: var(--color-forest-600);
+
+  --color-surface-bg: var(--color-sage-400);
+  --color-surface-border: rgba(163, 177, 138, 0.4);
+  --color-surface-icon: var(--color-forest-800);
+
+  --color-cta-gradient: linear-gradient(
+    135deg,
+    var(--color-forest-600) 0%,
+    var(--color-forest-800) 100%
+  );
+  --color-cta-title: var(--color-cream-100);
+  --color-cta-button-bg: var(--color-cream-100);
+  --color-cta-button-text: var(--color-forest-950);
+
+  --color-footer-text: var(--color-forest-800);
+  --color-footer-link: var(--color-forest-950);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-title: var(--color-title);
+  --color-body: var(--color-body);
+
+  --color-primary-bg: var(--color-primary-bg);
+  --color-primary-text: var(--color-primary-text);
+
+  --color-secondary-bg: var(--color-secondary-bg);
+  --color-secondary-text: var(--color-secondary-text);
+  --color-secondary-border: var(--color-secondary-border);
+
+  --color-surface-bg: var(--color-surface-bg);
+  --color-surface-border: var(--color-surface-border);
+  --color-surface-icon: var(--color-surface-icon);
+
+  --color-cta-title: var(--color-cta-title);
+  --color-cta-button-bg: var(--color-cta-button-bg);
+  --color-cta-button-text: var(--color-cta-button-text);
+
+  --color-footer-text: var(--color-footer-text);
+  --color-footer-link: var(--color-footer-link);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
