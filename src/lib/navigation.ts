@@ -42,5 +42,10 @@ export const NAV_TABS = [
     label: "Встречи",
     description: "Лог встреч: тема, дата, участники, обсуждение, итоговые решения.",
   },
+  {
+    href: "/playground",
+    label: "Playground",
+    description: "Свободное пространство для заметок разработчиков — без структуры и статусов.",
+  },
   ...SECTIONS,
 ] as const;
