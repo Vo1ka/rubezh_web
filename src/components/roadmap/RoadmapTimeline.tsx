@@ -1,4 +1,6 @@
 import type { RecommendedStep } from "@/lib/roadmap";
+import type { RoadmapTask } from "@/lib/roadmapTasks";
+import { buildTaskCodeMap, linkifyTaskCodes } from "./linkifyTaskCodes";
 
 function StepBadge({ n }: { n: number }) {
   return (
@@ -11,16 +13,34 @@ function StepBadge({ n }: { n: number }) {
   );
 }
 
-function StepText({ step }: { step: RecommendedStep }) {
+function StepText({
+  step,
+  tasksByCode,
+}: {
+  step: RecommendedStep;
+  tasksByCode: Map<string, string>;
+}) {
   return (
     <div>
-      <p className="text-sm font-medium text-[var(--color-title)]">{step.summary}</p>
-      <p className="mt-1 text-xs text-[var(--color-body)]">{step.rationale}</p>
+      <p className="text-sm font-medium text-[var(--color-title)]">
+        {linkifyTaskCodes(step.summary, tasksByCode)}
+      </p>
+      <p className="mt-1 text-xs text-[var(--color-body)]">
+        {linkifyTaskCodes(step.rationale, tasksByCode)}
+      </p>
     </div>
   );
 }
 
-export default function RoadmapTimeline({ steps }: { steps: RecommendedStep[] }) {
+export default function RoadmapTimeline({
+  steps,
+  tasks = [],
+}: {
+  steps: RecommendedStep[];
+  tasks?: RoadmapTask[];
+}) {
+  const tasksByCode = buildTaskCodeMap(tasks);
+
   return (
     <div>
       {/* Narrow screens: simple left-aligned timeline */}
@@ -28,7 +48,7 @@ export default function RoadmapTimeline({ steps }: { steps: RecommendedStep[] })
         {steps.map((s) => (
           <li key={s.step} className="flex gap-3">
             <StepBadge n={s.step} />
-            <StepText step={s} />
+            <StepText step={s} tasksByCode={tasksByCode} />
           </li>
         ))}
       </ol>
@@ -47,12 +67,12 @@ export default function RoadmapTimeline({ steps }: { steps: RecommendedStep[] })
               className="relative grid grid-cols-[1fr_auto_1fr] items-start gap-6"
             >
               <div className={isLeft ? "text-right" : ""}>
-                {isLeft ? <StepText step={s} /> : null}
+                {isLeft ? <StepText step={s} tasksByCode={tasksByCode} /> : null}
               </div>
               <div className="relative z-10">
                 <StepBadge n={s.step} />
               </div>
-              <div>{!isLeft ? <StepText step={s} /> : null}</div>
+              <div>{!isLeft ? <StepText step={s} tasksByCode={tasksByCode} /> : null}</div>
             </li>
           );
         })}

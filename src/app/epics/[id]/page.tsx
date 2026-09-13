@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import { useEpics } from "@/hooks/useEpics";
 import { useDecisions } from "@/hooks/useDecisions";
+import { useRoadmapTasks } from "@/hooks/useRoadmapTasks";
 import { MVP_PRIORITIES, RISK_LEVELS } from "@/lib/epics";
 import { SECTIONS } from "@/lib/sections";
 import EpicStatusControl from "@/components/epics/EpicStatusControl";
@@ -20,6 +21,7 @@ export default function EpicDetailPage() {
   const params = useParams<{ id: string }>();
   const { epics, loading, error, configured, updateStatus, deleteEpic } = useEpics();
   const { records: decisions, deleteRecord } = useDecisions();
+  const { tasks: roadmapTasks } = useRoadmapTasks();
 
   if (!configured) {
     return (
@@ -63,6 +65,7 @@ export default function EpicDetailPage() {
   const dependents = epics.filter((e) => e.depends_on.includes(epic.id));
 
   const linkedDecisions = decisions.filter((d) => d.epic_id === epic.id);
+  const linkedTasks = roadmapTasks.filter((t) => t.epic_id === epic.id);
 
   const handleDelete = () => {
     deleteEpic(epic.id);
@@ -148,6 +151,31 @@ export default function EpicDetailPage() {
           </div>
         ) : null}
       </div>
+
+      {linkedTasks.length > 0 ? (
+        <div>
+          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-[var(--color-body)]">
+            Задачи Roadmap по этому Epic
+          </h2>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {linkedTasks.map((t) => (
+              <Link
+                key={t.id}
+                href={`/roadmap/tasks/${t.slug}`}
+                className="rounded-lg border bg-[var(--color-secondary-bg)] p-4 transition-colors hover:border-[var(--color-title)]"
+                style={{ borderColor: "var(--color-surface-border)" }}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="rounded bg-[var(--color-primary-bg)] px-2 py-0.5 text-xs font-semibold text-[var(--color-primary-text)]">
+                    {t.code}
+                  </span>
+                  <span className="font-medium text-[var(--color-title)]">{t.title}</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       {linkedDecisions.length > 0 ? (
         <div>

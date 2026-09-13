@@ -1,10 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useRoadmap } from "@/hooks/useRoadmap";
+import { useRoadmapTasks } from "@/hooks/useRoadmapTasks";
 import RoadmapTimeline from "@/components/roadmap/RoadmapTimeline";
 
 export default function RoadmapPage() {
   const { snapshot, loading, error, configured } = useRoadmap();
+  const { tasks } = useRoadmapTasks();
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-8 px-4 py-10 sm:px-6">
@@ -74,9 +77,34 @@ export default function RoadmapPage() {
               className="rounded-lg border bg-[var(--color-secondary-bg)] p-4 sm:p-6"
               style={{ borderColor: "var(--color-surface-border)" }}
             >
-              <RoadmapTimeline steps={snapshot.recommended_order} />
+              <RoadmapTimeline steps={snapshot.recommended_order} tasks={tasks} />
             </div>
           </section>
+
+          {tasks.length > 0 ? (
+            <section>
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-[var(--color-body)]">
+                Задачи и спайки — полное ТЗ
+              </h2>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {tasks.map((t) => (
+                  <Link
+                    key={t.id}
+                    href={`/roadmap/tasks/${t.slug}`}
+                    className="rounded-lg border bg-[var(--color-secondary-bg)] p-4 transition-colors hover:border-[var(--color-title)]"
+                    style={{ borderColor: "var(--color-surface-border)" }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="rounded bg-[var(--color-primary-bg)] px-2 py-0.5 text-xs font-semibold text-[var(--color-primary-text)]">
+                        {t.code}
+                      </span>
+                      <h3 className="font-medium text-[var(--color-title)]">{t.title}</h3>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          ) : null}
 
           <section>
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-[var(--color-body)]">

@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { useRoadmap } from "@/hooks/useRoadmap";
+import { useRoadmapTasks } from "@/hooks/useRoadmapTasks";
 import RoadmapTimeline from "./RoadmapTimeline";
 
 export default function RoadmapHomeBlock() {
   const { snapshot, loading, configured } = useRoadmap();
+  const { tasks } = useRoadmapTasks();
 
   if (!configured) return null;
 
@@ -32,7 +34,7 @@ export default function RoadmapHomeBlock() {
       ) : !snapshot ? (
         <p className="text-sm text-[var(--color-body)]">Roadmap пока не заполнен.</p>
       ) : (
-        <RoadmapTimeline steps={snapshot.recommended_order} />
+        <RoadmapTimeline steps={snapshot.recommended_order} tasks={tasks} />
       )}
     </div>
   );
