@@ -53,7 +53,7 @@ export default function EpicsPage() {
                           key={epic.id}
                           epic={epic}
                           allEpics={epics}
-                          onCycleStatus={updateStatus}
+                          onChangeStatus={updateStatus}
                           onDelete={deleteEpic}
                         />
                       ))}

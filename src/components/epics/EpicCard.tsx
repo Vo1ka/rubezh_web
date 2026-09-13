@@ -1,16 +1,10 @@
-import type { Epic, EpicStatus } from "@/lib/epics";
-import { EPIC_STATUSES, RISK_LEVELS } from "@/lib/epics";
-import { SECTIONS } from "@/lib/sections";
+"use client";
 
-const STATUS_STYLE: Record<EpicStatus, string> = {
-  not_started: "bg-[var(--color-secondary-bg)] text-[var(--color-secondary-text)] border border-[var(--color-secondary-border)]",
-  in_progress: "bg-[var(--color-surface-bg)] text-[var(--color-title)]",
-  done: "bg-[var(--color-primary-bg)] text-[var(--color-primary-text)]",
-  blocked_design: "bg-[var(--color-forest-950)] text-[var(--color-primary-text)]",
-  blocked_technical: "bg-[var(--color-forest-950)] text-[var(--color-primary-text)]",
-  blocked_product: "bg-[var(--color-forest-950)] text-[var(--color-primary-text)]",
-  needs_prototype: "bg-[var(--color-forest-600)] text-[var(--color-primary-text)]",
-};
+import { useRouter } from "next/navigation";
+import type { Epic, EpicStatus } from "@/lib/epics";
+import { RISK_LEVELS } from "@/lib/epics";
+import { SECTIONS } from "@/lib/sections";
+import EpicStatusControl from "./EpicStatusControl";
 
 const PRIORITY_STYLE: Record<string, string> = {
   P0: "bg-[var(--color-forest-950)] text-[var(--color-primary-text)]",
@@ -21,31 +15,26 @@ const PRIORITY_STYLE: Record<string, string> = {
 export default function EpicCard({
   epic,
   allEpics,
-  onCycleStatus,
+  onChangeStatus,
   onDelete,
 }: {
   epic: Epic;
   allEpics: Epic[];
-  onCycleStatus: (id: string, current: EpicStatus) => void;
+  onChangeStatus: (id: string, status: EpicStatus) => void;
   onDelete: (id: string) => void;
 }) {
+  const router = useRouter();
   const ownerLabel = SECTIONS.find((s) => s.slug === epic.owner_section)?.label;
-  const statusLabel = EPIC_STATUSES.find((s) => s.value === epic.status)?.label;
   const riskLabel = RISK_LEVELS.find((r) => r.value === epic.risk_level)?.label;
   const dependencyTitles = epic.depends_on
     .map((id) => allEpics.find((e) => e.id === id)?.title)
     .filter(Boolean);
 
-  const nextStatus = () => {
-    const idx = EPIC_STATUSES.findIndex((s) => s.value === epic.status);
-    const next = EPIC_STATUSES[(idx + 1) % EPIC_STATUSES.length];
-    onCycleStatus(epic.id, next.value);
-  };
-
   return (
     <div
-      className="group rounded-lg border bg-[var(--color-secondary-bg)] p-4"
+      className="group cursor-pointer rounded-lg border bg-[var(--color-secondary-bg)] p-4 transition-colors hover:border-[var(--color-title)]"
       style={{ borderColor: "var(--color-surface-border)" }}
+      onClick={() => router.push(`/epics/${epic.id}`)}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
@@ -54,10 +43,15 @@ export default function EpicCard({
           >
             {epic.mvp_priority}
           </span>
-          <h3 className="font-semibold text-[var(--color-title)]">{epic.title}</h3>
+          <h3 className="font-semibold text-[var(--color-title)] hover:underline">
+            {epic.title}
+          </h3>
         </div>
         <button
-          onClick={() => onDelete(epic.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(epic.id);
+          }}
           className="text-[var(--color-body)] opacity-0 transition-opacity group-hover:opacity-60 hover:!opacity-100"
           aria-label="Удалить Epic"
         >
@@ -66,19 +60,16 @@ export default function EpicCard({
       </div>
 
       {epic.description ? (
-        <p className="mt-2 whitespace-pre-wrap text-sm text-[var(--color-secondary-text)]">
+        <p className="mt-2 line-clamp-3 whitespace-pre-wrap text-sm text-[var(--color-secondary-text)]">
           {epic.description}
         </p>
       ) : null}
 
       <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-        <button
-          onClick={nextStatus}
-          className={`rounded px-2 py-0.5 font-medium ${STATUS_STYLE[epic.status]}`}
-          title="Нажмите, чтобы сменить статус"
-        >
-          {statusLabel}
-        </button>
+        <EpicStatusControl
+          status={epic.status}
+          onChange={(status) => onChangeStatus(epic.id, status)}
+        />
         {ownerLabel ? (
           <span className="text-[var(--color-body)]">Владелец: {ownerLabel}</span>
         ) : null}

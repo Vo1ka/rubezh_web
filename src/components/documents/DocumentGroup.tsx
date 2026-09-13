@@ -8,6 +8,46 @@ function formatDate(value: string) {
   });
 }
 
+function toRawUrl(url: string) {
+  const m = url.match(/^https:\/\/github\.com\/([^/]+)\/([^/]+)\/blob\/(.+)$/);
+  if (m) {
+    const [, owner, repo, rest] = m;
+    return `https://raw.githubusercontent.com/${owner}/${repo}/${rest}`;
+  }
+  return url;
+}
+
+function filenameFromUrl(url: string) {
+  try {
+    const { pathname } = new URL(url);
+    const last = pathname.split("/").filter(Boolean).pop();
+    return last || "document";
+  } catch {
+    return "document";
+  }
+}
+
+async function downloadDocument(doc: DocumentRecord) {
+  const rawUrl = toRawUrl(doc.url);
+  try {
+    const res = await fetch(rawUrl);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const blob = await res.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.download = filenameFromUrl(doc.url);
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(blobUrl);
+  } catch {
+    // Not everything in this registry is a raw-downloadable file (e.g. a Notion/Google
+    // Docs link) — fall back to just opening it.
+    window.open(doc.url, "_blank", "noopener,noreferrer");
+  }
+}
+
 export default function DocumentGroup({
   docKey,
   versions,
@@ -44,19 +84,21 @@ export default function DocumentGroup({
             key={v.id}
             className="group flex items-start justify-between gap-3 text-sm"
           >
-            <div>
-              <a
-                href={v.url}
-                target="_blank"
-                rel="noreferrer"
-                className={`font-medium hover:underline ${
+            <button
+              type="button"
+              onClick={() => downloadDocument(v)}
+              className="flex-1 rounded text-left transition-colors hover:bg-[var(--color-surface-bg)]"
+              title="Скачать документ"
+            >
+              <span
+                className={`font-medium group-hover:underline ${
                   v.is_baseline
                     ? "text-[var(--color-title)]"
                     : "text-[var(--color-secondary-text)]"
                 }`}
               >
-                {v.version}
-              </a>
+                ⭳ {v.version}
+              </span>
               <span className="ml-2 text-xs text-[var(--color-body)]">
                 {formatDate(v.created_at)}
               </span>
@@ -65,7 +107,7 @@ export default function DocumentGroup({
                   {v.changelog}
                 </p>
               ) : null}
-            </div>
+            </button>
             <button
               onClick={() => onDelete(v.id)}
               className="text-[var(--color-body)] opacity-0 transition-opacity group-hover:opacity-60 hover:!opacity-100"
