@@ -1,5 +1,6 @@
 import DashboardShell from "@/components/DashboardShell";
 import RecentMeetings from "@/components/meetings/RecentMeetings";
+import RoadmapHomeBlock from "@/components/roadmap/RoadmapHomeBlock";
 
 export default function Home() {
   return (
@@ -28,7 +29,10 @@ export default function Home() {
         href: "/sections",
       }}
     >
-      <RecentMeetings />
+      <div className="flex flex-col gap-6">
+        <RoadmapHomeBlock />
+        <RecentMeetings />
+      </div>
     </DashboardShell>
   );
 }

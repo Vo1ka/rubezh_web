@@ -1,6 +1,7 @@
 "use client";
 
 import { useRoadmap } from "@/hooks/useRoadmap";
+import RoadmapTimeline from "@/components/roadmap/RoadmapTimeline";
 
 export default function RoadmapPage() {
   const { snapshot, loading, error, configured } = useRoadmap();
@@ -69,22 +70,11 @@ export default function RoadmapPage() {
             <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-[var(--color-body)]">
               Рекомендованный порядок работ
             </h2>
-            <div className="flex flex-col gap-3">
-              {snapshot.recommended_order.map((s) => (
-                <div
-                  key={s.step}
-                  className="rounded-lg border bg-[var(--color-secondary-bg)] p-4"
-                  style={{ borderColor: "var(--color-surface-border)" }}
-                >
-                  <div className="flex items-start gap-3">
-                    <span className="rounded bg-[var(--color-primary-bg)] px-2 py-0.5 text-xs font-semibold text-[var(--color-primary-text)]">
-                      {s.step}
-                    </span>
-                    <p className="text-sm text-[var(--color-secondary-text)]">{s.summary}</p>
-                  </div>
-                  <p className="mt-2 text-xs text-[var(--color-body)]">{s.rationale}</p>
-                </div>
-              ))}
+            <div
+              className="rounded-lg border bg-[var(--color-secondary-bg)] p-4 sm:p-6"
+              style={{ borderColor: "var(--color-surface-border)" }}
+            >
+              <RoadmapTimeline steps={snapshot.recommended_order} />
             </div>
           </section>
 
