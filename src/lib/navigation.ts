@@ -26,6 +26,12 @@ export const NAV_TABS = [
       "Реестр версий ключевых документов (Product Definition, Epic Map, Technical Architecture) со ссылками на актуальные версии.",
   },
   {
+    href: "/roadmap",
+    label: "Roadmap",
+    description:
+      "Вехи интеграции, рекомендованный порядок работ и текущий спринт — из Development Plan.",
+  },
+  {
     href: "/meetings",
     label: "Встречи",
     description: "Лог встреч: тема, дата, участники, обсуждение, итоговые решения.",

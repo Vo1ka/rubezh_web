@@ -3,6 +3,7 @@ export const DOC_KEY_PRESETS = [
   "epic-map",
   "game-design-spec",
   "technical-architecture",
+  "development-plan",
 ] as const;
 
 export type DocumentRecord = {
