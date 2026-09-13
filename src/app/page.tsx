@@ -25,6 +25,7 @@ export default function Home() {
         description:
           "У каждого направления — свой дашборд: Анализ, Проект, Тестирование, Разработка, ТехЛид.",
         action: "Открыть разделы",
+        href: "/sections",
       }}
     >
       <RecentMeetings />

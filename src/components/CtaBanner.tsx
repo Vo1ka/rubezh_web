@@ -1,12 +1,13 @@
-import type { ReactNode } from "react";
+import Link from "next/link";
 
 type CtaBannerProps = {
   title: string;
   description?: string;
-  action?: ReactNode;
+  action?: string;
+  href?: string;
 };
 
-export default function CtaBanner({ title, description, action }: CtaBannerProps) {
+export default function CtaBanner({ title, description, action, href }: CtaBannerProps) {
   return (
     <div
       className="rounded-lg px-6 py-8 text-center"
@@ -20,11 +21,14 @@ export default function CtaBanner({ title, description, action }: CtaBannerProps
           {description}
         </p>
       ) : null}
-      {action ? (
+      {action && href ? (
         <div className="mt-5 flex justify-center">
-          <button className="rounded-md bg-[var(--color-cta-button-bg)] px-4 py-2 text-sm font-medium text-[var(--color-cta-button-text)] transition-opacity hover:opacity-90">
+          <Link
+            href={href}
+            className="rounded-md bg-[var(--color-cta-button-bg)] px-4 py-2 text-sm font-medium text-[var(--color-cta-button-text)] transition-opacity hover:opacity-90"
+          >
             {action}
-          </button>
+          </Link>
         </div>
       ) : null}
     </div>

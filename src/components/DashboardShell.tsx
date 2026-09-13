@@ -11,7 +11,7 @@ type DashboardShellProps = {
   title: string;
   subtitle: string;
   cards: CardItem[];
-  cta: { title: string; description: string; action: string };
+  cta: { title: string; description: string; action: string; href: string };
   children?: ReactNode;
 };
 
@@ -43,6 +43,7 @@ export default function DashboardShell({
         title={cta.title}
         description={cta.description}
         action={cta.action}
+        href={cta.href}
       />
     </div>
   );
