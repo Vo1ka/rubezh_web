@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase, isSupabaseConfigured } from "@/lib/supabaseClient";
-import { getAccessToken, setAccessToken, generateToken } from "@/lib/accessCookie";
+import { getAccessToken, setAccessToken } from "@/lib/accessCookie";
 
 type ViewState =
   | { kind: "checking" }
@@ -49,18 +49,24 @@ export default function RequestAccessPage() {
     e.preventDefault();
     if (!supabase || !email.trim()) return;
     setSubmitting(true);
-    const token = generateToken();
-    const { error } = await supabase.from("access_requests").insert({
-      email: email.trim(),
-      token,
-    });
+    const { data, error } = await supabase
+      .rpc("request_or_resume_access", { p_email: email.trim() })
+      .single();
     setSubmitting(false);
-    if (error) {
-      setView({ kind: "error", message: error.message });
+    if (error || !data) {
+      setView({ kind: "error", message: error?.message ?? "Не удалось отправить заявку." });
       return;
     }
-    setAccessToken(token);
-    setView({ kind: "pending" });
+    const result = data as { token: string; status: string };
+    setAccessToken(result.token);
+    if (result.status === "approved") {
+      setView({ kind: "approved" });
+      router.replace("/");
+    } else if (result.status === "denied") {
+      setView({ kind: "denied" });
+    } else {
+      setView({ kind: "pending" });
+    }
   };
 
   if (!isSupabaseConfigured) {

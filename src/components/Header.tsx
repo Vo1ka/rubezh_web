@@ -12,11 +12,11 @@ export default function Header() {
       style={{ background: "var(--color-header-gradient)" }}
       className="text-[var(--color-primary-text)]"
     >
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-4 sm:px-6">
-        <span className="text-xl font-semibold tracking-tight">
+      <div className="mx-auto flex max-w-6xl items-start gap-x-6 gap-y-2 px-4 py-4 sm:px-6">
+        <span className="shrink-0 py-1.5 text-xl font-semibold tracking-tight">
           Rubezh Web
         </span>
-        <nav className="flex flex-wrap gap-1">
+        <nav className="flex min-w-0 flex-1 flex-wrap gap-1">
           {NAV_TABS.map((tab) => {
             const isActive =
               tab.href === "/"

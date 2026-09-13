@@ -11,10 +11,3 @@ export function setAccessToken(token: string) {
   if (typeof document === "undefined") return;
   document.cookie = `${COOKIE_NAME}=${encodeURIComponent(token)}; path=/; max-age=${ONE_YEAR_SECONDS}; samesite=lax`;
 }
-
-export function generateToken(): string {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return crypto.randomUUID();
-  }
-  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-}

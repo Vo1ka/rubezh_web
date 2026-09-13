@@ -16,25 +16,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/request-access", request.url));
   }
 
-  let status: string | null = null;
-  try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/check_access_status`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-      },
-      body: JSON.stringify({ p_token: token }),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      status = typeof data === "string" ? data : null;
-    }
-  } catch {
-    // Network hiccup talking to Supabase from the edge — fail closed (send to
-    // the gate) rather than let an unverifiable visitor through.
-    status = null;
+  // A single dropped request from the edge shouldn't bounce an already-approved
+  // visitor back to the gate, so a failed attempt gets one immediate retry
+  // before we fail closed.
+  let status = await fetchAccessStatus(token);
+  if (status === null) {
+    status = await fetchAccessStatus(token);
   }
 
   if (status === "approved") {
@@ -42,6 +29,25 @@ export async function middleware(request: NextRequest) {
   }
 
   return NextResponse.redirect(new URL("/request-access", request.url));
+}
+
+async function fetchAccessStatus(token: string): Promise<string | null> {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/check_access_status`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: SUPABASE_ANON_KEY!,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify({ p_token: token }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return typeof data === "string" ? data : null;
+  } catch {
+    return null;
+  }
 }
 
 export const config = {
