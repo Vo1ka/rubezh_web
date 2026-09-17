@@ -82,14 +82,6 @@ export default function PlaygroundNoteDetailPage() {
           Комментарии{comments.length > 0 ? ` (${comments.length})` : ""}
         </h2>
 
-        <PlaygroundNoteForm
-          onSubmit={createComment}
-          placeholder="Написать комментарий…"
-          submitLabel="Отправить"
-          rows={2}
-          autoFocus={false}
-        />
-
         {commentsError ? (
           <p className="text-sm text-[var(--color-title)]">Ошибка: {commentsError}</p>
         ) : null}
@@ -109,6 +101,14 @@ export default function PlaygroundNoteDetailPage() {
             ))}
           </div>
         )}
+
+        <PlaygroundNoteForm
+          onSubmit={createComment}
+          placeholder="Написать комментарий…"
+          submitLabel="Отправить"
+          rows={2}
+          autoFocus={false}
+        />
       </div>
     </div>
   );
