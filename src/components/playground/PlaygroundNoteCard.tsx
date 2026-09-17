@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { PlaygroundNote } from "@/lib/playground";
 
 function formatDateTime(value: string) {
@@ -37,6 +38,12 @@ export default function PlaygroundNoteCard({
       <p className="mt-2 whitespace-pre-wrap text-sm text-[var(--color-secondary-text)]">
         {note.content}
       </p>
+      <Link
+        href={`/playground/${note.id}`}
+        className="mt-3 inline-block text-xs text-[var(--color-body)] hover:underline"
+      >
+        Открыть и обсудить →
+      </Link>
     </div>
   );
 }

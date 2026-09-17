@@ -10,8 +10,16 @@ const inputBorder = { borderColor: "var(--color-secondary-border)" };
 
 export default function PlaygroundNoteForm({
   onSubmit,
+  placeholder = "Пиши что угодно: заметка, идея, ссылка, кусок кода, вопрос коллегам…",
+  submitLabel = "Опубликовать",
+  rows = 4,
+  autoFocus = true,
 }: {
   onSubmit: (input: NewPlaygroundNoteInput) => Promise<void>;
+  placeholder?: string;
+  submitLabel?: string;
+  rows?: number;
+  autoFocus?: boolean;
 }) {
   const [content, setContent] = useState("");
   const [author, setAuthor] = useState("");
@@ -35,11 +43,11 @@ export default function PlaygroundNoteForm({
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        placeholder="Пиши что угодно: заметка, идея, ссылка, кусок кода, вопрос коллегам…"
-        rows={4}
+        placeholder={placeholder}
+        rows={rows}
         className={inputClass}
         style={inputBorder}
-        autoFocus
+        autoFocus={autoFocus}
       />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <input
@@ -54,7 +62,7 @@ export default function PlaygroundNoteForm({
           disabled={!content.trim() || submitting}
           className="self-start rounded-md bg-[var(--color-primary-bg)] px-4 py-2 text-sm font-medium text-[var(--color-primary-text)] transition-opacity hover:opacity-90 disabled:opacity-50"
         >
-          Опубликовать
+          {submitLabel}
         </button>
       </div>
     </form>
