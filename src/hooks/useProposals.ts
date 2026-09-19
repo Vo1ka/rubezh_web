@@ -153,10 +153,10 @@ export function useProposals() {
       const { data, error: insertError } = await supabase
         .from("decisions")
         .insert({
-          type: overrides?.type ?? "open_question",
+          type: overrides?.type ?? "decision",
           title: overrides?.title ?? proposal.title,
           description: description || null,
-          status: overrides?.status ?? "needs_investigation",
+          status: overrides?.status ?? "active",
           epic_id: overrides?.epic_id ?? proposal.epic_id ?? null,
           related_ids: overrides?.related_ids ?? [],
           owner: overrides?.owner ?? proposal.owner ?? null,

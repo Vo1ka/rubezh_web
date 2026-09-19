@@ -142,8 +142,8 @@
 ### Переменные окружения (.env.local):
 
 ```bash
-ANTHROPIC_API_KEY=sk-star-8326f4af369b18dd661a079c6e7848edbcb0cb2df71c67e2a554b517e52fc0af
-ANTHROPIC_BASE_URL=https://ai.starimg.r
+ANTHROPIC_API_KEY=<см. секреты Vercel / не хранить в репозитории>
+ANTHROPIC_BASE_URL=https://ai.starimg.ru/
 ```
 
 ### Dev-сервер:
