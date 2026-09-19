@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import type { Epic, EpicStatus } from "@/lib/epics";
 import { RISK_LEVELS } from "@/lib/epics";
-import { SECTIONS } from "@/lib/sections";
+import { ownerLabel } from "@/lib/owners";
 import EpicStatusControl from "./EpicStatusControl";
 
 const PRIORITY_STYLE: Record<string, string> = {
@@ -24,7 +24,7 @@ export default function EpicCard({
   onDelete: (id: string) => void;
 }) {
   const router = useRouter();
-  const ownerLabel = SECTIONS.find((s) => s.slug === epic.owner_section)?.label;
+  const owner = ownerLabel(epic.owner_section);
   const riskLabel = RISK_LEVELS.find((r) => r.value === epic.risk_level)?.label;
   const dependencyTitles = epic.depends_on
     .map((id) => allEpics.find((e) => e.id === id)?.title)
@@ -70,8 +70,8 @@ export default function EpicCard({
           status={epic.status}
           onChange={(status) => onChangeStatus(epic.id, status)}
         />
-        {ownerLabel ? (
-          <span className="text-[var(--color-body)]">Владелец: {ownerLabel}</span>
+        {owner ? (
+          <span className="text-[var(--color-body)]">Владелец: {owner}</span>
         ) : null}
         {riskLabel ? (
           <span className="text-[var(--color-body)]">Риск: {riskLabel}</span>

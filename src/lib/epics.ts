@@ -1,4 +1,4 @@
-import type { SectionSlug } from "./sections";
+import type { Owner } from "./owners";
 
 export const MVP_PRIORITIES = [
   { value: "P0", label: "P0 — критично" },
@@ -32,7 +32,7 @@ export type Epic = {
   id: string;
   title: string;
   description: string | null;
-  owner_section: SectionSlug | null;
+  owner_section: Owner | null;
   mvp_priority: MvpPriority;
   status: EpicStatus;
   risk_level: RiskLevel | null;
@@ -45,7 +45,7 @@ export type Epic = {
 export type NewEpicInput = {
   title: string;
   description?: string;
-  owner_section?: SectionSlug | null;
+  owner_section?: Owner | null;
   mvp_priority: MvpPriority;
   risk_level?: RiskLevel | null;
   depends_on: string[];

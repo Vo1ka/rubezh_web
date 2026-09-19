@@ -75,6 +75,19 @@ export default function PlaygroundNoteDetailPage() {
         <p className="mt-2 whitespace-pre-wrap text-sm text-[var(--color-secondary-text)]">
           {note.content}
         </p>
+        <Link
+          href={{
+            pathname: "/proposals",
+            query: {
+              title: note.content.slice(0, 80),
+              description: note.content,
+              sourceNoteId: note.id,
+            },
+          }}
+          className="mt-3 inline-block text-xs text-[var(--color-body)] hover:underline"
+        >
+          Оформить как Предложение →
+        </Link>
       </div>
 
       <div className="flex flex-col gap-3">

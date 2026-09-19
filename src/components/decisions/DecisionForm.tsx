@@ -5,6 +5,7 @@ import type { FormEvent } from "react";
 import type { DecisionRecord, NewDecisionInput, RecordType } from "@/lib/decisions";
 import { RECORD_TYPES, STATUS_OPTIONS } from "@/lib/decisions";
 import type { Epic } from "@/lib/epics";
+import { OWNERS } from "@/lib/owners";
 
 const inputClass =
   "w-full rounded-md border bg-[var(--color-secondary-bg)] px-3 py-2 text-sm text-[var(--color-secondary-text)] placeholder:text-[var(--color-body)]";
@@ -25,6 +26,7 @@ export default function DecisionForm({
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("");
   const [epicId, setEpicId] = useState("");
+  const [owner, setOwner] = useState("");
   const [relatedIds, setRelatedIds] = useState<string[]>([]);
 
   const toggleRelated = (id: string) => {
@@ -43,11 +45,13 @@ export default function DecisionForm({
       status,
       epic_id: epicId || null,
       related_ids: relatedIds,
+      owner: (owner || null) as NewDecisionInput["owner"],
     });
     setTitle("");
     setDescription("");
     setStatus("");
     setEpicId("");
+    setOwner("");
     setRelatedIds([]);
     setOpen(false);
   };
@@ -128,6 +132,19 @@ export default function DecisionForm({
           {epics.map((epic) => (
             <option key={epic.id} value={epic.id}>
               {epic.title}
+            </option>
+          ))}
+        </select>
+        <select
+          value={owner}
+          onChange={(e) => setOwner(e.target.value)}
+          className={`${inputClass} sm:w-auto`}
+          style={inputBorder}
+        >
+          <option value="">Без владельца</option>
+          {OWNERS.map((o) => (
+            <option key={o.value} value={o.value}>
+              {o.label}
             </option>
           ))}
         </select>

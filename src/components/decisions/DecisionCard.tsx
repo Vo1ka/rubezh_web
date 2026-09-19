@@ -1,6 +1,7 @@
 import type { DecisionRecord } from "@/lib/decisions";
 import { RECORD_TYPES, STATUS_OPTIONS } from "@/lib/decisions";
 import type { Epic } from "@/lib/epics";
+import { ownerLabel } from "@/lib/owners";
 
 const TYPE_STYLE: Record<string, string> = {
   decision: "bg-[var(--color-primary-bg)] text-[var(--color-primary-text)]",
@@ -24,6 +25,7 @@ export default function DecisionCard({
     (s) => s.value === record.status
   )?.label;
   const epicTitle = epics.find((e) => e.id === record.epic_id)?.title;
+  const owner = ownerLabel(record.owner);
   const relatedTitles = record.related_ids
     .map((id) => allRecords.find((r) => r.id === id)?.title)
     .filter(Boolean);
@@ -60,10 +62,12 @@ export default function DecisionCard({
         </p>
       ) : null}
 
-      {(epicTitle || relatedTitles.length > 0) && (
+      {(epicTitle || owner || relatedTitles.length > 0) && (
         <p className="mt-2 text-xs text-[var(--color-body)]">
           {epicTitle ? `Epic: ${epicTitle}` : ""}
-          {epicTitle && relatedTitles.length > 0 ? " · " : ""}
+          {epicTitle && owner ? " · " : ""}
+          {owner ? `Владелец: ${owner}` : ""}
+          {(epicTitle || owner) && relatedTitles.length > 0 ? " · " : ""}
           {relatedTitles.length > 0 ? `Связано: ${relatedTitles.join(", ")}` : ""}
         </p>
       )}

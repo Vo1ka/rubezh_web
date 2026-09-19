@@ -2,34 +2,35 @@
 
 import { useState } from "react";
 import type { FormEvent } from "react";
-import type { Epic, NewEpicInput } from "@/lib/epics";
-import { MVP_PRIORITIES, RISK_LEVELS } from "@/lib/epics";
+import type { NewProposalInput } from "@/lib/proposals";
+import type { Epic } from "@/lib/epics";
 import { OWNERS } from "@/lib/owners";
 
 const inputClass =
   "w-full rounded-md border bg-[var(--color-secondary-bg)] px-3 py-2 text-sm text-[var(--color-secondary-text)] placeholder:text-[var(--color-body)]";
 const inputBorder = { borderColor: "var(--color-secondary-border)" };
 
-export default function EpicForm({
-  existingEpics,
+export default function ProposalForm({
+  epics,
   onSubmit,
+  initialOpen = false,
+  initialTitle = "",
+  initialDescription = "",
+  initialSourceNoteId,
 }: {
-  existingEpics: Epic[];
-  onSubmit: (input: NewEpicInput) => Promise<void>;
+  epics: Epic[];
+  onSubmit: (input: NewProposalInput) => Promise<void>;
+  initialOpen?: boolean;
+  initialTitle?: string;
+  initialDescription?: string;
+  initialSourceNoteId?: string | null;
 }) {
-  const [open, setOpen] = useState(false);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const [open, setOpen] = useState(initialOpen);
+  const [title, setTitle] = useState(initialTitle);
+  const [description, setDescription] = useState(initialDescription);
+  const [proposedBy, setProposedBy] = useState("");
   const [owner, setOwner] = useState("");
-  const [priority, setPriority] = useState<NewEpicInput["mvp_priority"]>("P1");
-  const [risk, setRisk] = useState("");
-  const [dependsOn, setDependsOn] = useState<string[]>([]);
-
-  const toggleDependency = (id: string) => {
-    setDependsOn((prev) =>
-      prev.includes(id) ? prev.filter((d) => d !== id) : [...prev, id]
-    );
-  };
+  const [epicId, setEpicId] = useState("");
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -37,17 +38,16 @@ export default function EpicForm({
     await onSubmit({
       title,
       description,
-      owner_section: (owner || null) as NewEpicInput["owner_section"],
-      mvp_priority: priority,
-      risk_level: (risk || null) as NewEpicInput["risk_level"],
-      depends_on: dependsOn,
+      proposed_by: proposedBy,
+      owner: (owner || null) as NewProposalInput["owner"],
+      epic_id: epicId || null,
+      source_note_id: initialSourceNoteId ?? null,
     });
     setTitle("");
     setDescription("");
+    setProposedBy("");
     setOwner("");
-    setPriority("P1");
-    setRisk("");
-    setDependsOn([]);
+    setEpicId("");
     setOpen(false);
   };
 
@@ -57,7 +57,7 @@ export default function EpicForm({
         onClick={() => setOpen(true)}
         className="self-start rounded-md bg-[var(--color-primary-bg)] px-4 py-2 text-sm font-medium text-[var(--color-primary-text)] transition-opacity hover:opacity-90"
       >
-        + Добавить Epic
+        + Новое предложение
       </button>
     );
   }
@@ -71,7 +71,7 @@ export default function EpicForm({
       <input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="Название Epic"
+        placeholder="Название предложения"
         className={inputClass}
         style={inputBorder}
         autoFocus
@@ -79,12 +79,19 @@ export default function EpicForm({
       <textarea
         value={description}
         onChange={(e) => setDescription(e.target.value)}
-        placeholder="Описание"
-        rows={2}
+        placeholder="Описание идеи"
+        rows={3}
         className={inputClass}
         style={inputBorder}
       />
       <div className="flex flex-col gap-3 sm:flex-row">
+        <input
+          value={proposedBy}
+          onChange={(e) => setProposedBy(e.target.value)}
+          placeholder="Кто предложил (дисциплина или имя)"
+          className={`${inputClass} sm:flex-1`}
+          style={inputBorder}
+        />
         <select
           value={owner}
           onChange={(e) => setOwner(e.target.value)}
@@ -99,55 +106,19 @@ export default function EpicForm({
           ))}
         </select>
         <select
-          value={priority}
-          onChange={(e) => setPriority(e.target.value as NewEpicInput["mvp_priority"])}
+          value={epicId}
+          onChange={(e) => setEpicId(e.target.value)}
           className={`${inputClass} sm:w-auto`}
           style={inputBorder}
         >
-          {MVP_PRIORITIES.map((p) => (
-            <option key={p.value} value={p.value}>
-              {p.label}
-            </option>
-          ))}
-        </select>
-        <select
-          value={risk}
-          onChange={(e) => setRisk(e.target.value)}
-          className={`${inputClass} sm:w-auto`}
-          style={inputBorder}
-        >
-          <option value="">Риск не указан</option>
-          {RISK_LEVELS.map((r) => (
-            <option key={r.value} value={r.value}>
-              {r.label}
+          <option value="">Без привязки к Epic</option>
+          {epics.map((epic) => (
+            <option key={epic.id} value={epic.id}>
+              {epic.title}
             </option>
           ))}
         </select>
       </div>
-
-      {existingEpics.length > 0 ? (
-        <div>
-          <p className="mb-1 text-xs font-medium text-[var(--color-body)]">
-            Зависит от:
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {existingEpics.map((e) => (
-              <label
-                key={e.id}
-                className="flex items-center gap-1.5 rounded border px-2 py-1 text-xs text-[var(--color-secondary-text)]"
-                style={inputBorder}
-              >
-                <input
-                  type="checkbox"
-                  checked={dependsOn.includes(e.id)}
-                  onChange={() => toggleDependency(e.id)}
-                />
-                {e.title}
-              </label>
-            ))}
-          </div>
-        </div>
-      ) : null}
 
       <div className="flex gap-2">
         <button

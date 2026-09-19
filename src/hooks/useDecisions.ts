@@ -59,6 +59,8 @@ export function useDecisions() {
         status: input.status || null,
         epic_id: input.epic_id || null,
         related_ids: input.related_ids,
+        owner: input.owner || null,
+        proposal_id: input.proposal_id || null,
       });
       if (insertError) setError(insertError.message);
       else await refresh();

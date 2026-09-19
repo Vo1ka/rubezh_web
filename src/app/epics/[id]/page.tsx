@@ -6,7 +6,7 @@ import { useEpics } from "@/hooks/useEpics";
 import { useDecisions } from "@/hooks/useDecisions";
 import { useRoadmapTasks } from "@/hooks/useRoadmapTasks";
 import { MVP_PRIORITIES, RISK_LEVELS } from "@/lib/epics";
-import { SECTIONS } from "@/lib/sections";
+import { ownerLabel as lookupOwnerLabel } from "@/lib/owners";
 import EpicStatusControl from "@/components/epics/EpicStatusControl";
 import DecisionCard from "@/components/decisions/DecisionCard";
 
@@ -54,7 +54,7 @@ export default function EpicDetailPage() {
     );
   }
 
-  const ownerLabel = SECTIONS.find((s) => s.slug === epic.owner_section)?.label;
+  const ownerLabel = lookupOwnerLabel(epic.owner_section);
   const priorityLabel = MVP_PRIORITIES.find((p) => p.value === epic.mvp_priority)?.label;
   const riskLabel = RISK_LEVELS.find((r) => r.value === epic.risk_level)?.label;
 
