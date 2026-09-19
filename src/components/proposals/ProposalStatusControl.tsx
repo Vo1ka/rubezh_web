@@ -1,18 +1,33 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import type { CSSProperties } from "react";
 import type { ProposalStatus } from "@/lib/proposals";
 import { PROPOSAL_STATUSES } from "@/lib/proposals";
 
-export const PROPOSAL_STATUS_STYLE: Record<ProposalStatus, string> = {
-  new: "bg-[var(--color-secondary-bg)] text-[var(--color-secondary-text)] border border-[var(--color-secondary-border)]",
-  validating: "bg-[var(--color-surface-bg)] text-[var(--color-title)]",
-  approved: "bg-[var(--color-primary-bg)] text-[var(--color-primary-text)]",
-  rejected: "bg-[var(--color-forest-950)] text-[var(--color-primary-text)]",
-  blocked_product: "bg-[var(--color-forest-950)] text-[var(--color-primary-text)]",
-  blocked_design: "bg-[var(--color-forest-950)] text-[var(--color-primary-text)]",
-  blocked_technical: "bg-[var(--color-forest-950)] text-[var(--color-primary-text)]",
-  needs_prototype: "bg-[var(--color-forest-600)] text-[var(--color-primary-text)]",
+const solid = (background: string): CSSProperties => ({
+  background,
+  color: "var(--badge-text)",
+  boxShadow: "0 1px 3px rgba(0,0,0,0.18)",
+});
+
+const outline = (border: string): CSSProperties => ({
+  background: "transparent",
+  color: "var(--badge-text)",
+  border: `1.5px solid ${border}`,
+});
+
+// Kept as a lookup by status so ProposalStatusControl's dropdown and
+// ProposalCard's read-only badge always render identically.
+export const PROPOSAL_STATUS_STYLE: Record<ProposalStatus, CSSProperties> = {
+  new: outline("var(--badge-gold)"),
+  validating: solid("var(--badge-orange)"),
+  approved: solid("var(--badge-gold)"),
+  rejected: solid("var(--badge-orange-red)"),
+  blocked_product: solid("var(--badge-tomato)"),
+  blocked_design: solid("var(--badge-dark-orange)"),
+  blocked_technical: outline("var(--badge-orange-red)"),
+  needs_prototype: outline("var(--badge-dark-orange)"),
 };
 
 export default function ProposalStatusControl({
@@ -47,7 +62,10 @@ export default function ProposalStatusControl({
           e.stopPropagation();
           setOpen((o) => !o);
         }}
-        className={`rounded px-2 py-0.5 font-medium ${size === "lg" ? "text-sm" : "text-xs"} ${PROPOSAL_STATUS_STYLE[status]}`}
+        className={`rounded-md px-2.5 py-1 font-bold ${size === "lg" ? "text-sm" : "text-xs"} ${
+          status === "validating" ? "animate-pulse" : ""
+        }`}
+        style={PROPOSAL_STATUS_STYLE[status]}
         title="Нажмите, чтобы выбрать статус"
       >
         {statusLabel} ▾
@@ -67,9 +85,10 @@ export default function ProposalStatusControl({
                 onChange(s.value);
                 setOpen(false);
               }}
-              className={`rounded px-2 py-1 text-left text-xs font-medium transition-opacity hover:opacity-80 ${PROPOSAL_STATUS_STYLE[s.value]} ${
+              className={`rounded-md px-2.5 py-1 text-left text-xs font-bold transition-opacity hover:opacity-80 ${
                 s.value === status ? "ring-2 ring-[var(--color-title)]" : ""
               }`}
+              style={PROPOSAL_STATUS_STYLE[s.value]}
             >
               {s.label}
             </button>

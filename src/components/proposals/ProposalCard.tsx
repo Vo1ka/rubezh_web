@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import type { ProposalRecord, ProposalStatus } from "@/lib/proposals";
 import { VERDICTS } from "@/lib/proposals";
 import type { Epic } from "@/lib/epics";
@@ -7,13 +8,27 @@ import type { DecisionRecord } from "@/lib/decisions";
 import { OWNERS, ownerLabel } from "@/lib/owners";
 import ProposalStatusControl from "./ProposalStatusControl";
 
-const VERDICT_STYLE: Record<string, string> = {
-  aligned: "bg-[var(--color-primary-bg)] text-[var(--color-primary-text)]",
-  product_issue: "bg-[var(--color-forest-950)] text-[var(--color-primary-text)]",
-  design_issue: "bg-[var(--color-forest-950)] text-[var(--color-primary-text)]",
-  technical_decision: "bg-[var(--color-forest-600)] text-[var(--color-primary-text)]",
-  needs_prototype: "bg-[var(--color-forest-600)] text-[var(--color-primary-text)]",
-  out_of_scope: "bg-[var(--color-surface-bg)] text-[var(--color-title)]",
+const solidBadge = (background: string): CSSProperties => ({
+  background,
+  color: "var(--badge-text)",
+  boxShadow: "0 1px 3px rgba(0,0,0,0.18)",
+});
+
+const outlineBadge = (border: string): CSSProperties => ({
+  background: "transparent",
+  color: "var(--badge-text)",
+  border: `1.5px solid ${border}`,
+});
+
+// Same accent vocabulary as ProposalStatusControl's status badges — aligned
+// keeps the "good outcome" gold, needs_prototype keeps the "waiting" outline.
+const VERDICT_STYLE: Record<string, CSSProperties> = {
+  aligned: solidBadge("var(--badge-gold)"),
+  product_issue: solidBadge("var(--badge-tomato)"),
+  design_issue: solidBadge("var(--badge-dark-orange)"),
+  technical_decision: solidBadge("var(--badge-orange)"),
+  needs_prototype: outlineBadge("var(--badge-dark-orange)"),
+  out_of_scope: solidBadge("var(--badge-orange-red)"),
 };
 
 export default function ProposalCard({
@@ -101,7 +116,10 @@ export default function ProposalCard({
           style={{ borderColor: "var(--color-surface-border)" }}
         >
           <div className="flex flex-wrap items-center gap-2">
-            <span className={`rounded px-2 py-0.5 text-xs font-semibold ${VERDICT_STYLE[proposal.verdict]}`}>
+            <span
+              className="rounded-md px-2.5 py-1 text-xs font-bold"
+              style={VERDICT_STYLE[proposal.verdict]}
+            >
               {verdictLabel}
             </span>
             {proposal.verdict_owner ? (

@@ -44,6 +44,18 @@
 
   --color-footer-text: var(--color-forest-800);
   --color-footer-link: var(--color-forest-950);
+
+  /* Badge accent palette — scoped to /proposals status & verdict badges only.
+     Not part of the site theme; do not reference these outside proposal badges. */
+  --badge-gold: #ffd700;
+  --badge-orange: #ffa500;
+  --badge-dark-orange: #ff8c00;
+  --badge-tomato: #ff6347;
+  --badge-orange-red: #ff4500;
+  /* Dark neutral text: every palette color above is light/saturated, so a
+     single dark label keeps all badge combinations at ~6:1–15:1 contrast
+     (WCAG AA) instead of picking per-color text colors that fail AA. */
+  --badge-text: #2a1200;
 }
 
 @theme inline {
