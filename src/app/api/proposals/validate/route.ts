@@ -59,7 +59,9 @@ function extractJson(text: string): unknown {
   const candidate = fenced ? fenced[1] : text;
   const start = candidate.indexOf("{");
   const end = candidate.lastIndexOf("}");
-  if (start === -1 || end === -1) throw new Error("Ответ модели не содержит JSON");
+  if (start === -1 || end === -1) {
+    throw new Error(`Ответ модели не содержит JSON. Сырой ответ: ${text.slice(0, 300) || "(пусто)"}`);
+  }
   return JSON.parse(candidate.slice(start, end + 1));
 }
 
@@ -179,7 +181,10 @@ ${decisionsSummary || "(пусто)"}
     }
 
     const data = await res.json();
-    const text = data.content?.[0]?.text ?? "";
+    const text = data.content?.[0]?.text;
+    if (typeof text !== "string") {
+      throw new Error(`Неожиданная форма ответа API: ${JSON.stringify(data).slice(0, 300)}`);
+    }
     verdictJson = extractJson(text) as typeof verdictJson;
   } catch (e) {
     const message = e instanceof Error ? e.message : "Сбой обращения к Claude API";
