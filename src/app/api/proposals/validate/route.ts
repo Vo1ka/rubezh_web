@@ -181,7 +181,12 @@ ${decisionsSummary || "(пусто)"}
     }
 
     const data = await res.json();
-    const text = data.content?.[0]?.text;
+    // The proxy can return extended-thinking responses where content[0] is a
+    // "thinking" block, not the text — find the first actual text block.
+    const textBlock = (data.content as Array<{ type: string; text?: string }> | undefined)?.find(
+      (block) => block.type === "text"
+    );
+    const text = textBlock?.text;
     if (typeof text !== "string") {
       throw new Error(`Неожиданная форма ответа API: ${JSON.stringify(data).slice(0, 300)}`);
     }
