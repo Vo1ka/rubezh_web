@@ -185,12 +185,26 @@ supabase/migrations/
 
 ---
 
+### ✅ RW-11 — Kanban ↔ Epic Map linking
+
+**Статус:** Реализовано в коде
+
+- Миграция: `supabase/migrations/0011_notes_epic_link.sql` — добавляет `epic_id` (nullable FK на `epics`, `on delete set null`) в `notes`
+- Модель: `Note.epic_id` в `src/lib/notes.ts`
+- Хук: `setNoteEpic()` в `src/hooks/useNotes.ts` — привязка/отвязка карточки к Epic
+- Хук: `useNotesByEpic()` в `src/hooks/useNotes.ts` — все карточки по конкретному Epic во всех дисциплинах, с realtime-подпиской
+- UI на карточке: выпадающий список Epic на `NoteCard` (`src/components/kanban/NoteCard.tsx`), прокинут через `KanbanColumn` → `KanbanBoard`
+- UI на странице Epic: блок "Карточки Kanban по этому Epic" на `src/app/epics/[id]/page.tsx` — ссылки на секцию с меткой статуса
+
+**Что нужно:** Применить миграцию `0011_notes_epic_link.sql` в Supabase SQL Editor
+
+---
+
 ## Следующие задачи (не критические, можно отложить):
 
 - RW-7: Детектор рассинхронизаций (data integrity job)
 - RW-8: Q&A-агент по содержимому сайта (read-only)
 - RW-9: Черновики Предложений из документов-отчётов
 - RW-10: Общий механизм "Запрос на изменение"
-- RW-11: Kanban ↔ Epic Map linking
 
-Эти задачи независимы от RW-1–RW-6 и могут вестись параллельно или после завершения основного цикла.
+Эти задачи независимы от RW-1–RW-6 и RW-11, могут вестись параллельно или после завершения основного цикла.

@@ -6,6 +6,7 @@ import { STATUSES } from "@/lib/notes";
 import type { NoteStatus } from "@/lib/notes";
 import type { SectionSlug } from "@/lib/sections";
 import { useNotes } from "@/hooks/useNotes";
+import { useEpics } from "@/hooks/useEpics";
 import KanbanColumn from "./KanbanColumn";
 
 export default function KanbanBoard({ section }: { section: SectionSlug }) {
@@ -17,8 +18,10 @@ export default function KanbanBoard({ section }: { section: SectionSlug }) {
     createNote,
     moveNote,
     cyclePriority,
+    setNoteEpic,
     deleteNote,
   } = useNotes(section);
+  const { epics } = useEpics();
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState("");
 
@@ -85,9 +88,11 @@ export default function KanbanBoard({ section }: { section: SectionSlug }) {
               status={status.value}
               label={status.label}
               notes={notes.filter((n) => n.status === status.value)}
+              epics={epics}
               onDragStart={handleDragStart}
               onDrop={handleDrop}
               onCyclePriority={cyclePriority}
+              onChangeEpic={setNoteEpic}
               onDelete={deleteNote}
             />
           ))}

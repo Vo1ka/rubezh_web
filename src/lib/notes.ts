@@ -26,6 +26,7 @@ export type Note = {
   priority: NotePriority;
   position: number;
   author: string | null;
+  epic_id: string | null;
   created_at: string;
   updated_at: string;
 };

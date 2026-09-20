@@ -1,14 +1,17 @@
 import type { DragEvent } from "react";
 import type { Note, NoteStatus } from "@/lib/notes";
+import type { Epic } from "@/lib/epics";
 import NoteCard from "./NoteCard";
 
 type KanbanColumnProps = {
   status: NoteStatus;
   label: string;
   notes: Note[];
+  epics: Epic[];
   onDragStart: (e: DragEvent<HTMLDivElement>, id: string) => void;
   onDrop: (status: NoteStatus) => void;
   onCyclePriority: (id: string, current: Note["priority"]) => void;
+  onChangeEpic: (id: string, epicId: string | null) => void;
   onDelete: (id: string) => void;
 };
 
@@ -16,9 +19,11 @@ export default function KanbanColumn({
   status,
   label,
   notes,
+  epics,
   onDragStart,
   onDrop,
   onCyclePriority,
+  onChangeEpic,
   onDelete,
 }: KanbanColumnProps) {
   return (
@@ -39,8 +44,10 @@ export default function KanbanColumn({
           <NoteCard
             key={note.id}
             note={note}
+            epics={epics}
             onDragStart={onDragStart}
             onCyclePriority={onCyclePriority}
+            onChangeEpic={onChangeEpic}
             onDelete={onDelete}
           />
         ))}

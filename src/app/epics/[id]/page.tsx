@@ -5,8 +5,11 @@ import { useRouter, useParams } from "next/navigation";
 import { useEpics } from "@/hooks/useEpics";
 import { useDecisions } from "@/hooks/useDecisions";
 import { useRoadmapTasks } from "@/hooks/useRoadmapTasks";
+import { useNotesByEpic } from "@/hooks/useNotes";
 import { MVP_PRIORITIES, RISK_LEVELS } from "@/lib/epics";
 import { ownerLabel as lookupOwnerLabel } from "@/lib/owners";
+import { STATUSES as NOTE_STATUSES } from "@/lib/notes";
+import { getSectionBySlug } from "@/lib/sections";
 import EpicStatusControl from "@/components/epics/EpicStatusControl";
 import DecisionCard from "@/components/decisions/DecisionCard";
 
@@ -22,6 +25,7 @@ export default function EpicDetailPage() {
   const { epics, loading, error, configured, updateStatus, deleteEpic } = useEpics();
   const { records: decisions, deleteRecord } = useDecisions();
   const { tasks: roadmapTasks } = useRoadmapTasks();
+  const { notes: linkedNotes } = useNotesByEpic(params.id);
 
   if (!configured) {
     return (
@@ -173,6 +177,36 @@ export default function EpicDetailPage() {
                 </div>
               </Link>
             ))}
+          </div>
+        </div>
+      ) : null}
+
+      {linkedNotes.length > 0 ? (
+        <div>
+          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-[var(--color-body)]">
+            Карточки Kanban по этому Epic
+          </h2>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {linkedNotes.map((note) => {
+              const section = getSectionBySlug(note.section);
+              const statusLabel = NOTE_STATUSES.find((s) => s.value === note.status)?.label;
+              return (
+                <Link
+                  key={note.id}
+                  href={section?.href ?? "/"}
+                  className="rounded-lg border bg-[var(--color-secondary-bg)] p-4 transition-colors hover:border-[var(--color-title)]"
+                  style={{ borderColor: "var(--color-surface-border)" }}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="rounded bg-[var(--color-primary-bg)] px-2 py-0.5 text-xs font-semibold text-[var(--color-primary-text)]">
+                      {section?.label ?? note.section}
+                    </span>
+                    <span className="text-xs text-[var(--color-body)]">{statusLabel}</span>
+                  </div>
+                  <p className="mt-2 font-medium text-[var(--color-title)]">{note.title}</p>
+                </Link>
+              );
+            })}
           </div>
         </div>
       ) : null}

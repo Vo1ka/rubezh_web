@@ -121,6 +121,19 @@ export function useNotes(section: SectionSlug) {
     [refresh]
   );
 
+  const setNoteEpic = useCallback(
+    async (id: string, epicId: string | null) => {
+      if (!supabase) return;
+      const { error: updateError } = await supabase
+        .from("notes")
+        .update({ epic_id: epicId })
+        .eq("id", id);
+      if (updateError) setError(updateError.message);
+      else await refresh();
+    },
+    [refresh]
+  );
+
   return {
     notes,
     loading,
@@ -130,5 +143,50 @@ export function useNotes(section: SectionSlug) {
     moveNote,
     cyclePriority,
     deleteNote,
+    setNoteEpic,
   };
+}
+
+// RW-11: notes linked to a given Epic, across every discipline section — used
+// by the Epic detail page to show its in-flight Kanban work.
+export function useNotesByEpic(epicId: string) {
+  const instanceId = useId();
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const refresh = useCallback(async () => {
+    if (!supabase) return;
+    const { data } = await supabase
+      .from("notes")
+      .select("*")
+      .eq("epic_id", epicId)
+      .order("updated_at", { ascending: false });
+    setNotes(data ?? []);
+    setLoading(false);
+  }, [epicId]);
+
+  useEffect(() => {
+    const client = supabase;
+    if (!client) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    refresh();
+
+    const channel = client
+      .channel(`notes-by-epic-${epicId}-${instanceId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "notes", filter: `epic_id=eq.${epicId}` },
+        () => refresh()
+      )
+      .subscribe();
+
+    return () => {
+      client.removeChannel(channel);
+    };
+  }, [epicId, instanceId, refresh]);
+
+  return { notes, loading };
 }
