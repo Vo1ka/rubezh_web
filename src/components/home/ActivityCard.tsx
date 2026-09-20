@@ -22,9 +22,21 @@ export default function ActivityCard() {
   return (
     <div
       className="rounded-lg border bg-[var(--color-surface-bg)] p-5"
-      style={{ borderColor: "var(--color-surface-border)" }}
+      style={{
+        borderColor: "var(--color-surface-border)",
+        borderTopWidth: 4,
+        borderTopColor: "var(--dashboard-activity-accent-bg)",
+      }}
     >
-      <h3 className="mb-2 text-base font-semibold text-[var(--color-title)]">Активность</h3>
+      <h3
+        className="mb-2 inline-block rounded-full px-2.5 py-0.5 text-base font-semibold"
+        style={{
+          backgroundColor: "var(--dashboard-activity-accent-bg)",
+          color: "var(--dashboard-activity-accent-text)",
+        }}
+      >
+        Активность
+      </h3>
 
       {loading ? (
         <p className="text-sm text-[var(--color-body)]">Загрузка…</p>

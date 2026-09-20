@@ -24,10 +24,22 @@ export default function RecentNotesCard() {
   return (
     <div
       className="rounded-lg border bg-[var(--color-surface-bg)] p-5"
-      style={{ borderColor: "var(--color-surface-border)" }}
+      style={{
+        borderColor: "var(--color-surface-border)",
+        borderTopWidth: 4,
+        borderTopColor: "var(--dashboard-notes-accent-bg)",
+      }}
     >
       <div className="mb-2 flex items-center justify-between gap-3">
-        <h3 className="text-base font-semibold text-[var(--color-title)]">Последние заметки</h3>
+        <h3
+          className="rounded-full px-2.5 py-0.5 text-base font-semibold"
+          style={{
+            backgroundColor: "var(--dashboard-notes-accent-bg)",
+            color: "var(--dashboard-notes-accent-text)",
+          }}
+        >
+          Последние заметки
+        </h3>
         <Link href="/playground" className="shrink-0 text-sm text-[var(--color-body)] hover:underline">
           Playground →
         </Link>

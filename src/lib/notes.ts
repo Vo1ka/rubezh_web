@@ -10,6 +10,13 @@ export const STATUSES = [
 
 export type NoteStatus = (typeof STATUSES)[number]["value"];
 
+export const STATUS_COLORS: Record<NoteStatus, { bg: string; text: string }> = {
+  backlog: { bg: "var(--status-backlog-bg)", text: "var(--status-backlog-text)" },
+  in_progress: { bg: "var(--status-in-progress-bg)", text: "var(--status-in-progress-text)" },
+  review: { bg: "var(--status-review-bg)", text: "var(--status-review-text)" },
+  done: { bg: "var(--status-done-bg)", text: "var(--status-done-text)" },
+};
+
 export const PRIORITIES = [
   { value: "low", label: "Низкий" },
   { value: "medium", label: "Средний" },

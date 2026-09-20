@@ -9,7 +9,7 @@
   --color-cream-100: #dad7cd; /* cream — page background, light text on dark */
 
   /* Semantic tokens */
-  --background: var(--color-cream-100);
+  --background: #faf0e6;
   --foreground: var(--color-forest-800);
 
   --color-title: var(--color-forest-950);
@@ -56,6 +56,36 @@
      single dark label keeps all badge combinations at ~6:1–15:1 contrast
      (WCAG AA) instead of picking per-color text colors that fail AA. */
   --badge-text: #2a1200;
+
+  /* Status accents — scoped to the Kanban board's status columns/pills
+     (Бэклог / В работе / Ревью / Готово) and to the Epic Map's status
+     control, which shares the "В работе" / "Готово" values. Not part of
+     the site theme; do not reference these outside status badges. Text is
+     picked per-background for the best available WCAG contrast within
+     this 5-color brand palette. */
+  --status-backlog-bg: #d0b08f;
+  --status-backlog-text: #424c06;
+  --status-in-progress-bg: #bb6a45;
+  --status-in-progress-text: #faf6e5;
+  --status-review-bg: #adc010;
+  --status-review-text: #424c06;
+  --status-done-bg: #424c06;
+  --status-done-text: #faf6e5;
+  /* Outline treatment for the Epic Map's three "blocked" statuses — same
+     rust hue as in_progress but low-alpha + bordered, so a blocked epic
+     reads as distinct from one actively in progress. */
+  --status-blocked-bg: rgba(187, 106, 69, 0.15);
+  --status-blocked-border: #bb6a45;
+  --status-blocked-text: #424c06;
+
+  /* Home dashboard summary-card accents — scoped to the "Последние
+     заметки" / "Прогресс по проекту" / "Активность" cards only. */
+  --dashboard-notes-accent-bg: #d0b08f;
+  --dashboard-notes-accent-text: #424c06;
+  --dashboard-progress-accent-bg: #adc010;
+  --dashboard-progress-accent-text: #424c06;
+  --dashboard-activity-accent-bg: #bb6a45;
+  --dashboard-activity-accent-text: #faf6e5;
 }
 
 @theme inline {

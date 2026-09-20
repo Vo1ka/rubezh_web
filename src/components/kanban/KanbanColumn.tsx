@@ -1,5 +1,6 @@
 import type { DragEvent } from "react";
 import type { Note, NoteStatus } from "@/lib/notes";
+import { STATUS_COLORS } from "@/lib/notes";
 import type { Epic } from "@/lib/epics";
 import NoteCard from "./NoteCard";
 
@@ -32,18 +33,28 @@ export default function KanbanColumn({
   onToggleSelect,
   onDelete,
 }: KanbanColumnProps) {
+  const accent = STATUS_COLORS[status];
+
   return (
     <div
       onDragOver={(e) => e.preventDefault()}
       onDrop={() => onDrop(status)}
       className="flex min-h-[16rem] min-w-0 flex-col gap-3 rounded-lg border bg-[var(--background)] p-3"
-      style={{ borderColor: "var(--color-surface-border)" }}
+      style={{ borderColor: "var(--color-surface-border)", borderTopWidth: 4, borderTopColor: accent.bg }}
     >
       <div className="flex items-center justify-between px-1">
-        <h3 className="text-sm font-semibold text-[var(--color-title)]">
+        <h3
+          className="rounded-full px-2.5 py-0.5 text-sm font-semibold"
+          style={{ backgroundColor: accent.bg, color: accent.text }}
+        >
           {label}
         </h3>
-        <span className="text-xs text-[var(--color-body)]">{notes.length}</span>
+        <span
+          className="rounded-full px-2 py-0.5 text-xs font-medium"
+          style={{ backgroundColor: accent.bg, color: accent.text }}
+        >
+          {notes.length}
+        </span>
       </div>
       <div className="flex flex-1 flex-col gap-2">
         {notes.map((note) => (
