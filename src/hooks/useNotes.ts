@@ -134,6 +134,46 @@ export function useNotes(section: SectionSlug) {
     [refresh]
   );
 
+  const bulkSetStatus = useCallback(
+    async (ids: string[], status: NoteStatus) => {
+      if (!supabase || ids.length === 0) return;
+      const { error: updateError } = await supabase.from("notes").update({ status }).in("id", ids);
+      if (updateError) setError(updateError.message);
+      else await refresh();
+    },
+    [refresh]
+  );
+
+  const bulkSetPriority = useCallback(
+    async (ids: string[], priority: NotePriority) => {
+      if (!supabase || ids.length === 0) return;
+      const { error: updateError } = await supabase.from("notes").update({ priority }).in("id", ids);
+      if (updateError) setError(updateError.message);
+      else await refresh();
+    },
+    [refresh]
+  );
+
+  const bulkSetEpic = useCallback(
+    async (ids: string[], epicId: string | null) => {
+      if (!supabase || ids.length === 0) return;
+      const { error: updateError } = await supabase.from("notes").update({ epic_id: epicId }).in("id", ids);
+      if (updateError) setError(updateError.message);
+      else await refresh();
+    },
+    [refresh]
+  );
+
+  const bulkDelete = useCallback(
+    async (ids: string[]) => {
+      if (!supabase || ids.length === 0) return;
+      const { error: deleteError } = await supabase.from("notes").delete().in("id", ids);
+      if (deleteError) setError(deleteError.message);
+      else await refresh();
+    },
+    [refresh]
+  );
+
   return {
     notes,
     loading,
@@ -144,6 +184,10 @@ export function useNotes(section: SectionSlug) {
     cyclePriority,
     deleteNote,
     setNoteEpic,
+    bulkSetStatus,
+    bulkSetPriority,
+    bulkSetEpic,
+    bulkDelete,
   };
 }
 

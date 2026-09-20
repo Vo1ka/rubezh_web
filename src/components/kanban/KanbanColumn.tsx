@@ -8,10 +8,13 @@ type KanbanColumnProps = {
   label: string;
   notes: Note[];
   epics: Epic[];
+  selectMode: boolean;
+  selectedIds: Set<string>;
   onDragStart: (e: DragEvent<HTMLDivElement>, id: string) => void;
   onDrop: (status: NoteStatus) => void;
   onCyclePriority: (id: string, current: Note["priority"]) => void;
   onChangeEpic: (id: string, epicId: string | null) => void;
+  onToggleSelect: (id: string) => void;
   onDelete: (id: string) => void;
 };
 
@@ -20,10 +23,13 @@ export default function KanbanColumn({
   label,
   notes,
   epics,
+  selectMode,
+  selectedIds,
   onDragStart,
   onDrop,
   onCyclePriority,
   onChangeEpic,
+  onToggleSelect,
   onDelete,
 }: KanbanColumnProps) {
   return (
@@ -45,9 +51,12 @@ export default function KanbanColumn({
             key={note.id}
             note={note}
             epics={epics}
+            selectMode={selectMode}
+            selected={selectedIds.has(note.id)}
             onDragStart={onDragStart}
             onCyclePriority={onCyclePriority}
             onChangeEpic={onChangeEpic}
+            onToggleSelect={onToggleSelect}
             onDelete={onDelete}
           />
         ))}
