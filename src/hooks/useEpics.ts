@@ -1,59 +1,45 @@
 "use client";
 
-import { useCallback, useEffect, useId, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase, isSupabaseConfigured } from "@/lib/supabaseClient";
 import type { Epic, EpicStatus, NewEpicInput } from "@/lib/epics";
+import { getQuerySnapshot, refreshQuery, subscribeQuery } from "@/lib/queryStore";
+
+const EPICS_KEY = "epics";
+
+async function fetchEpics() {
+  if (!supabase) return { data: null, error: null };
+  const { data, error } = await supabase
+    .from("epics")
+    .select("*")
+    .order("mvp_priority", { ascending: true })
+    .order("position", { ascending: true });
+  return { data: data ?? [], error: error?.message ?? null };
+}
+
+function subscribeEpicsRealtime(onChange: () => void) {
+  if (!supabase) return null;
+  return supabase
+    .channel("epics-shared")
+    .on("postgres_changes", { event: "*", schema: "public", table: "epics" }, onChange)
+    .subscribe();
+}
 
 export function useEpics() {
-  const instanceId = useId();
-  const [epics, setEpics] = useState<Epic[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const refresh = useCallback(async () => {
-    if (!supabase) return;
-    const { data, error: fetchError } = await supabase
-      .from("epics")
-      .select("*")
-      .order("mvp_priority", { ascending: true })
-      .order("position", { ascending: true });
-
-    if (fetchError) {
-      setError(fetchError.message);
-    } else {
-      setEpics(data ?? []);
-      setError(null);
-    }
-    setLoading(false);
-  }, []);
+  const [snapshot, setSnapshot] = useState(() => getQuerySnapshot<Epic[]>(EPICS_KEY, []));
+  const [mutationError, setMutationError] = useState<string | null>(null);
 
   useEffect(() => {
-    const client = supabase;
-    if (!client) {
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    refresh();
-
-    const channel = client
-      .channel(`epics-${instanceId}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "epics" },
-        () => refresh()
-      )
-      .subscribe();
-
-    return () => {
-      client.removeChannel(channel);
-    };
-  }, [instanceId, refresh]);
+    if (!supabase) return;
+    return subscribeQuery(EPICS_KEY, [], fetchEpics, subscribeEpicsRealtime, () =>
+      setSnapshot(getQuerySnapshot<Epic[]>(EPICS_KEY, []))
+    );
+  }, []);
 
   const createEpic = useCallback(
     async (input: NewEpicInput) => {
       if (!supabase || !input.title.trim()) return;
-      const maxPosition = epics.reduce((max, e) => Math.max(max, e.position), -1);
+      const maxPosition = snapshot.data.reduce((max, e) => Math.max(max, e.position), -1);
       const { error: insertError } = await supabase.from("epics").insert({
         title: input.title.trim(),
         description: input.description?.trim() || null,
@@ -63,39 +49,39 @@ export function useEpics() {
         depends_on: input.depends_on,
         position: maxPosition + 1,
       });
-      if (insertError) setError(insertError.message);
-      else await refresh();
+      if (insertError) setMutationError(insertError.message);
+      else {
+        setMutationError(null);
+        refreshQuery(EPICS_KEY);
+      }
     },
-    [epics, refresh]
+    [snapshot.data]
   );
 
-  const updateStatus = useCallback(
-    async (id: string, status: EpicStatus) => {
-      if (!supabase) return;
-      const { error: updateError } = await supabase
-        .from("epics")
-        .update({ status })
-        .eq("id", id);
-      if (updateError) setError(updateError.message);
-      else await refresh();
-    },
-    [refresh]
-  );
+  const updateStatus = useCallback(async (id: string, status: EpicStatus) => {
+    if (!supabase) return;
+    const { error: updateError } = await supabase.from("epics").update({ status }).eq("id", id);
+    if (updateError) setMutationError(updateError.message);
+    else {
+      setMutationError(null);
+      refreshQuery(EPICS_KEY);
+    }
+  }, []);
 
-  const deleteEpic = useCallback(
-    async (id: string) => {
-      if (!supabase) return;
-      const { error: deleteError } = await supabase.from("epics").delete().eq("id", id);
-      if (deleteError) setError(deleteError.message);
-      else await refresh();
-    },
-    [refresh]
-  );
+  const deleteEpic = useCallback(async (id: string) => {
+    if (!supabase) return;
+    const { error: deleteError } = await supabase.from("epics").delete().eq("id", id);
+    if (deleteError) setMutationError(deleteError.message);
+    else {
+      setMutationError(null);
+      refreshQuery(EPICS_KEY);
+    }
+  }, []);
 
   return {
-    epics,
-    loading,
-    error,
+    epics: snapshot.data,
+    loading: snapshot.loading,
+    error: mutationError ?? snapshot.error,
     configured: isSupabaseConfigured,
     createEpic,
     updateStatus,

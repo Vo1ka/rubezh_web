@@ -1,12 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useEpics } from "@/hooks/useEpics";
+import type { Epic } from "@/lib/epics";
 import { EPIC_STATUSES } from "@/lib/epics";
 
-export default function ProjectProgressCard() {
-  const { epics, loading, configured } = useEpics();
-
+export default function ProjectProgressCard({
+  epics,
+  loading,
+  configured,
+}: {
+  epics: Epic[];
+  loading: boolean;
+  configured: boolean;
+}) {
   if (!configured) return null;
 
   const counts = EPIC_STATUSES.map((status) => ({

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRecentNotesHistory } from "@/hooks/useNoteHistory";
-import { useEpics } from "@/hooks/useEpics";
+import type { Epic } from "@/lib/epics";
 import { describeNoteHistoryEntry } from "@/lib/notes";
 import { getSectionBySlug } from "@/lib/sections";
 
@@ -13,9 +13,8 @@ function formatDate(value: string) {
   });
 }
 
-export default function ActivityCard() {
+export default function ActivityCard({ epics }: { epics: Epic[] }) {
   const { entries, loading, configured } = useRecentNotesHistory(5);
-  const { epics } = useEpics();
 
   if (!configured) return null;
 

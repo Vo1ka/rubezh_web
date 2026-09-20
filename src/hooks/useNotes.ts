@@ -4,57 +4,65 @@ import { useCallback, useEffect, useId, useState } from "react";
 import { supabase, isSupabaseConfigured } from "@/lib/supabaseClient";
 import type { Note, NotePriority, NoteStatus } from "@/lib/notes";
 import type { SectionSlug } from "@/lib/sections";
+import { getQuerySnapshot, refreshQuery, subscribeQuery } from "@/lib/queryStore";
 
-export function useNotes(section: SectionSlug) {
-  const instanceId = useId();
-  const [notes, setNotes] = useState<Note[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+function notesKey(section: SectionSlug) {
+  return `notes:${section}`;
+}
 
-  const refresh = useCallback(async () => {
-    if (!supabase) return;
-    const { data, error: fetchError } = await supabase
+function fetchNotesFor(section: SectionSlug) {
+  return async () => {
+    if (!supabase) return { data: null, error: null };
+    const { data, error } = await supabase
       .from("notes")
       .select("*")
       .eq("section", section)
       .order("position", { ascending: true });
+    return { data: data ?? [], error: error?.message ?? null };
+  };
+}
 
-    if (fetchError) {
-      setError(fetchError.message);
-    } else {
-      setNotes(data ?? []);
-      setError(null);
-    }
-    setLoading(false);
-  }, [section]);
-
-  useEffect(() => {
-    const client = supabase;
-    if (!client) {
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    refresh();
-
-    const channel = client
-      .channel(`notes-${section}-${instanceId}`)
+function subscribeNotesRealtimeFor(section: SectionSlug) {
+  return (onChange: () => void) => {
+    if (!supabase) return null;
+    return supabase
+      .channel(`notes-${section}-shared`)
       .on(
         "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "notes",
-          filter: `section=eq.${section}`,
-        },
-        () => refresh()
+        { event: "*", schema: "public", table: "notes", filter: `section=eq.${section}` },
+        onChange
       )
       .subscribe();
+  };
+}
 
-    return () => {
-      client.removeChannel(channel);
-    };
-  }, [section, instanceId, refresh]);
+export function useNotes(section: SectionSlug) {
+  const key = notesKey(section);
+  const [snapshot, setSnapshot] = useState(() => getQuerySnapshot<Note[]>(key, []));
+  const [mutationError, setMutationError] = useState<string | null>(null);
+
+  // SidebarNotes keeps the same useNotes instance mounted across section
+  // navigations (only the `section` prop changes), so resync to the new
+  // section's (possibly cached) snapshot during render rather than waiting
+  // for the effect below to refetch — avoids a stale flash of frame content.
+  const [snapshotSection, setSnapshotSection] = useState(section);
+  if (section !== snapshotSection) {
+    setSnapshotSection(section);
+    setSnapshot(getQuerySnapshot<Note[]>(key, []));
+  }
+
+  useEffect(() => {
+    if (!supabase) return;
+    return subscribeQuery(
+      notesKey(section),
+      [],
+      fetchNotesFor(section),
+      subscribeNotesRealtimeFor(section),
+      () => setSnapshot(getQuerySnapshot<Note[]>(notesKey(section), []))
+    );
+  }, [section]);
+
+  const notes = snapshot.data;
 
   const createNote = useCallback(
     async (title: string) => {
@@ -70,10 +78,13 @@ export function useNotes(section: SectionSlug) {
         priority: "medium",
         position: maxPosition + 1,
       });
-      if (insertError) setError(insertError.message);
-      else await refresh();
+      if (insertError) setMutationError(insertError.message);
+      else {
+        setMutationError(null);
+        refreshQuery(key);
+      }
     },
-    [section, notes, refresh]
+    [section, notes, key]
   );
 
   const moveNote = useCallback(
@@ -87,10 +98,13 @@ export function useNotes(section: SectionSlug) {
         .from("notes")
         .update({ status, position: maxPosition + 1 })
         .eq("id", id);
-      if (updateError) setError(updateError.message);
-      else await refresh();
+      if (updateError) setMutationError(updateError.message);
+      else {
+        setMutationError(null);
+        refreshQuery(key);
+      }
     },
-    [notes, refresh]
+    [notes, key]
   );
 
   const cyclePriority = useCallback(
@@ -102,23 +116,26 @@ export function useNotes(section: SectionSlug) {
         .from("notes")
         .update({ priority: next })
         .eq("id", id);
-      if (updateError) setError(updateError.message);
-      else await refresh();
+      if (updateError) setMutationError(updateError.message);
+      else {
+        setMutationError(null);
+        refreshQuery(key);
+      }
     },
-    [refresh]
+    [key]
   );
 
   const deleteNote = useCallback(
     async (id: string) => {
       if (!supabase) return;
-      const { error: deleteError } = await supabase
-        .from("notes")
-        .delete()
-        .eq("id", id);
-      if (deleteError) setError(deleteError.message);
-      else await refresh();
+      const { error: deleteError } = await supabase.from("notes").delete().eq("id", id);
+      if (deleteError) setMutationError(deleteError.message);
+      else {
+        setMutationError(null);
+        refreshQuery(key);
+      }
     },
-    [refresh]
+    [key]
   );
 
   const setNoteEpic = useCallback(
@@ -128,56 +145,71 @@ export function useNotes(section: SectionSlug) {
         .from("notes")
         .update({ epic_id: epicId })
         .eq("id", id);
-      if (updateError) setError(updateError.message);
-      else await refresh();
+      if (updateError) setMutationError(updateError.message);
+      else {
+        setMutationError(null);
+        refreshQuery(key);
+      }
     },
-    [refresh]
+    [key]
   );
 
   const bulkSetStatus = useCallback(
     async (ids: string[], status: NoteStatus) => {
       if (!supabase || ids.length === 0) return;
       const { error: updateError } = await supabase.from("notes").update({ status }).in("id", ids);
-      if (updateError) setError(updateError.message);
-      else await refresh();
+      if (updateError) setMutationError(updateError.message);
+      else {
+        setMutationError(null);
+        refreshQuery(key);
+      }
     },
-    [refresh]
+    [key]
   );
 
   const bulkSetPriority = useCallback(
     async (ids: string[], priority: NotePriority) => {
       if (!supabase || ids.length === 0) return;
       const { error: updateError } = await supabase.from("notes").update({ priority }).in("id", ids);
-      if (updateError) setError(updateError.message);
-      else await refresh();
+      if (updateError) setMutationError(updateError.message);
+      else {
+        setMutationError(null);
+        refreshQuery(key);
+      }
     },
-    [refresh]
+    [key]
   );
 
   const bulkSetEpic = useCallback(
     async (ids: string[], epicId: string | null) => {
       if (!supabase || ids.length === 0) return;
       const { error: updateError } = await supabase.from("notes").update({ epic_id: epicId }).in("id", ids);
-      if (updateError) setError(updateError.message);
-      else await refresh();
+      if (updateError) setMutationError(updateError.message);
+      else {
+        setMutationError(null);
+        refreshQuery(key);
+      }
     },
-    [refresh]
+    [key]
   );
 
   const bulkDelete = useCallback(
     async (ids: string[]) => {
       if (!supabase || ids.length === 0) return;
       const { error: deleteError } = await supabase.from("notes").delete().in("id", ids);
-      if (deleteError) setError(deleteError.message);
-      else await refresh();
+      if (deleteError) setMutationError(deleteError.message);
+      else {
+        setMutationError(null);
+        refreshQuery(key);
+      }
     },
-    [refresh]
+    [key]
   );
 
   return {
     notes,
-    loading,
-    error,
+    loading: snapshot.loading,
+    error: mutationError ?? snapshot.error,
     configured: isSupabaseConfigured,
     createNote,
     moveNote,
