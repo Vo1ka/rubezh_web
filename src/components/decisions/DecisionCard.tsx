@@ -1,12 +1,25 @@
+import type { CSSProperties } from "react";
 import type { DecisionRecord } from "@/lib/decisions";
 import { RECORD_TYPES, STATUS_OPTIONS } from "@/lib/decisions";
 import type { Epic } from "@/lib/epics";
 import { ownerLabel } from "@/lib/owners";
 
-const TYPE_STYLE: Record<string, string> = {
-  decision: "bg-[var(--color-primary-bg)] text-[var(--color-primary-text)]",
-  risk: "bg-[var(--color-forest-950)] text-[var(--color-primary-text)]",
-  open_question: "bg-[var(--color-surface-bg)] text-[var(--color-title)]",
+const solidBadge = (background: string): CSSProperties => ({
+  background,
+  color: "var(--badge-text)",
+  boxShadow: "0 1px 3px rgba(0,0,0,0.18)",
+});
+
+const outlineBadge = (border: string): CSSProperties => ({
+  background: "transparent",
+  color: "var(--badge-text)",
+  border: `1.5px solid ${border}`,
+});
+
+const TYPE_STYLE: Record<string, CSSProperties> = {
+  decision: solidBadge("var(--badge-gold)"),
+  risk: solidBadge("var(--badge-tomato)"),
+  open_question: outlineBadge("var(--badge-dark-orange)"),
 };
 
 export default function DecisionCard({
@@ -37,7 +50,7 @@ export default function DecisionCard({
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
-          <span className={`rounded px-2 py-0.5 text-xs font-semibold ${TYPE_STYLE[record.type]}`}>
+          <span className="rounded-md px-2.5 py-1 text-xs font-bold" style={TYPE_STYLE[record.type]}>
             {typeLabel}
           </span>
           {statusLabel ? (

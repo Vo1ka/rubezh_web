@@ -5,25 +5,28 @@ import type { CSSProperties } from "react";
 import type { EpicStatus } from "@/lib/epics";
 import { EPIC_STATUSES } from "@/lib/epics";
 
-const solid = (bg: string, text: string): CSSProperties => ({
-  backgroundColor: bg,
-  color: text,
+const solid = (background: string): CSSProperties => ({
+  background,
+  color: "var(--badge-text)",
+  boxShadow: "0 1px 3px rgba(0,0,0,0.18)",
 });
 
-const outline = (border: string, text: string): CSSProperties => ({
-  backgroundColor: "var(--status-blocked-bg)",
-  color: text,
+const outline = (border: string): CSSProperties => ({
+  background: "transparent",
+  color: "var(--badge-text)",
   border: `1.5px solid ${border}`,
 });
 
+// Same accent vocabulary as ProposalStatusControl — Epic and Proposal
+// statuses share the same blocked_*/needs_prototype values.
 export const STATUS_STYLE: Record<EpicStatus, CSSProperties> = {
-  not_started: solid("var(--status-backlog-bg)", "var(--status-backlog-text)"),
-  in_progress: solid("var(--status-in-progress-bg)", "var(--status-in-progress-text)"),
-  done: solid("var(--status-done-bg)", "var(--status-done-text)"),
-  needs_prototype: solid("var(--status-review-bg)", "var(--status-review-text)"),
-  blocked_design: outline("var(--status-blocked-border)", "var(--status-blocked-text)"),
-  blocked_technical: outline("var(--status-blocked-border)", "var(--status-blocked-text)"),
-  blocked_product: outline("var(--status-blocked-border)", "var(--status-blocked-text)"),
+  not_started: outline("var(--badge-gold)"),
+  in_progress: solid("var(--badge-orange)"),
+  done: solid("var(--badge-gold)"),
+  needs_prototype: outline("var(--badge-dark-orange)"),
+  blocked_design: solid("var(--badge-dark-orange)"),
+  blocked_technical: outline("var(--badge-orange-red)"),
+  blocked_product: solid("var(--badge-tomato)"),
 };
 
 export default function EpicStatusControl({
@@ -58,7 +61,7 @@ export default function EpicStatusControl({
           e.stopPropagation();
           setOpen((o) => !o);
         }}
-        className={`rounded px-2 py-0.5 font-medium ${size === "lg" ? "text-sm" : "text-xs"}`}
+        className={`rounded-md px-2.5 py-1 font-bold ${size === "lg" ? "text-sm" : "text-xs"}`}
         style={STATUS_STYLE[status]}
         title="Нажмите, чтобы выбрать статус"
       >
@@ -79,7 +82,7 @@ export default function EpicStatusControl({
                 onChange(s.value);
                 setOpen(false);
               }}
-              className={`rounded px-2 py-1 text-left text-xs font-medium transition-opacity hover:opacity-80 ${
+              className={`rounded-md px-2.5 py-1 text-left text-xs font-bold transition-opacity hover:opacity-80 ${
                 s.value === status ? "ring-2 ring-[var(--color-title)]" : ""
               }`}
               style={STATUS_STYLE[s.value]}

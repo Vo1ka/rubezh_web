@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { SectionSlug } from "./sections";
 import type { Epic } from "./epics";
 
@@ -10,11 +11,24 @@ export const STATUSES = [
 
 export type NoteStatus = (typeof STATUSES)[number]["value"];
 
-export const STATUS_COLORS: Record<NoteStatus, { bg: string; text: string }> = {
-  backlog: { bg: "var(--status-backlog-bg)", text: "var(--status-backlog-text)" },
-  in_progress: { bg: "var(--status-in-progress-bg)", text: "var(--status-in-progress-text)" },
-  review: { bg: "var(--status-review-bg)", text: "var(--status-review-text)" },
-  done: { bg: "var(--status-done-bg)", text: "var(--status-done-text)" },
+const solidBadge = (background: string): CSSProperties => ({
+  background,
+  color: "var(--badge-text)",
+  boxShadow: "0 1px 3px rgba(0,0,0,0.18)",
+});
+
+const outlineBadge = (border: string): CSSProperties => ({
+  background: "transparent",
+  color: "var(--badge-text)",
+  border: `1.5px solid ${border}`,
+});
+
+// Same accent vocabulary as ProposalStatusControl/ProposalCard's badges.
+export const STATUS_BADGE: Record<NoteStatus, { style: CSSProperties; accent: string }> = {
+  backlog: { style: outlineBadge("var(--badge-gold)"), accent: "var(--badge-gold)" },
+  in_progress: { style: solidBadge("var(--badge-orange)"), accent: "var(--badge-orange)" },
+  review: { style: outlineBadge("var(--badge-dark-orange)"), accent: "var(--badge-dark-orange)" },
+  done: { style: solidBadge("var(--badge-gold)"), accent: "var(--badge-gold)" },
 };
 
 export const PRIORITIES = [

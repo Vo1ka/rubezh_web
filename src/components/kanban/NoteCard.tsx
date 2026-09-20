@@ -1,16 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import type { DragEvent } from "react";
+import type { CSSProperties, DragEvent } from "react";
 import type { Note } from "@/lib/notes";
 import { PRIORITIES } from "@/lib/notes";
 import type { Epic } from "@/lib/epics";
 import NoteHistoryModal from "./NoteHistoryModal";
 
-const PRIORITY_STYLE: Record<Note["priority"], string> = {
-  high: "bg-[var(--color-primary-bg)] text-[var(--color-primary-text)]",
-  medium: "bg-[var(--color-surface-bg)] text-[var(--color-title)]",
-  low: "border border-[var(--color-secondary-border)] bg-[var(--color-secondary-bg)] text-[var(--color-secondary-text)]",
+const solidBadge = (background: string): CSSProperties => ({
+  background,
+  color: "var(--badge-text)",
+  boxShadow: "0 1px 3px rgba(0,0,0,0.18)",
+});
+
+const outlineBadge = (border: string): CSSProperties => ({
+  background: "transparent",
+  color: "var(--badge-text)",
+  border: `1.5px solid ${border}`,
+});
+
+const PRIORITY_STYLE: Record<Note["priority"], CSSProperties> = {
+  high: solidBadge("var(--badge-orange-red)"),
+  medium: solidBadge("var(--badge-orange)"),
+  low: outlineBadge("var(--badge-gold)"),
 };
 
 type NoteCardProps = {
@@ -88,7 +100,8 @@ export default function NoteCard({
       <div className="flex flex-wrap items-center gap-1.5">
         <button
           onClick={() => onCyclePriority(note.id, note.priority)}
-          className={`rounded px-2 py-0.5 text-xs font-medium ${PRIORITY_STYLE[note.priority]}`}
+          className="rounded-md px-2.5 py-1 text-xs font-bold"
+          style={PRIORITY_STYLE[note.priority]}
           title="Нажмите, чтобы сменить приоритет"
           disabled={selectMode}
         >

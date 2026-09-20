@@ -45,8 +45,9 @@
   --color-footer-text: var(--color-forest-800);
   --color-footer-link: var(--color-forest-950);
 
-  /* Badge accent palette — scoped to /proposals status & verdict badges only.
-     Not part of the site theme; do not reference these outside proposal badges. */
+  /* Badge accent palette — the single color system for every status/type/
+     priority badge across the app (Proposals, Kanban, Epic Map, Decisions).
+     Not part of the general site theme; do not reference these outside badges. */
   --badge-gold: #ffd700;
   --badge-orange: #ffa500;
   --badge-dark-orange: #ff8c00;
@@ -56,27 +57,6 @@
      single dark label keeps all badge combinations at ~6:1–15:1 contrast
      (WCAG AA) instead of picking per-color text colors that fail AA. */
   --badge-text: #2a1200;
-
-  /* Status accents — scoped to the Kanban board's status columns/pills
-     (Бэклог / В работе / Ревью / Готово) and to the Epic Map's status
-     control, which shares the "В работе" / "Готово" values. Not part of
-     the site theme; do not reference these outside status badges. Text is
-     picked per-background for the best available WCAG contrast within
-     this 5-color brand palette. */
-  --status-backlog-bg: #d0b08f;
-  --status-backlog-text: #424c06;
-  --status-in-progress-bg: #bb6a45;
-  --status-in-progress-text: #faf6e5;
-  --status-review-bg: #adc010;
-  --status-review-text: #424c06;
-  --status-done-bg: #424c06;
-  --status-done-text: #faf6e5;
-  /* Outline treatment for the Epic Map's three "blocked" statuses — same
-     rust hue as in_progress but low-alpha + bordered, so a blocked epic
-     reads as distinct from one actively in progress. */
-  --status-blocked-bg: rgba(187, 106, 69, 0.15);
-  --status-blocked-border: #bb6a45;
-  --status-blocked-text: #424c06;
 
   /* Home dashboard summary-card accents — scoped to the "Последние
      заметки" / "Прогресс по проекту" / "Активность" cards only. */

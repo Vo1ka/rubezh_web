@@ -1,15 +1,28 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import type { CSSProperties } from "react";
 import type { Epic, EpicStatus } from "@/lib/epics";
 import { RISK_LEVELS } from "@/lib/epics";
 import { ownerLabel } from "@/lib/owners";
 import EpicStatusControl from "./EpicStatusControl";
 
-const PRIORITY_STYLE: Record<string, string> = {
-  P0: "bg-[var(--color-forest-950)] text-[var(--color-primary-text)]",
-  P1: "bg-[var(--color-forest-600)] text-[var(--color-primary-text)]",
-  P2: "bg-[var(--color-surface-bg)] text-[var(--color-title)]",
+const solidBadge = (background: string): CSSProperties => ({
+  background,
+  color: "var(--badge-text)",
+  boxShadow: "0 1px 3px rgba(0,0,0,0.18)",
+});
+
+const outlineBadge = (border: string): CSSProperties => ({
+  background: "transparent",
+  color: "var(--badge-text)",
+  border: `1.5px solid ${border}`,
+});
+
+const PRIORITY_STYLE: Record<string, CSSProperties> = {
+  P0: solidBadge("var(--badge-orange-red)"),
+  P1: solidBadge("var(--badge-dark-orange)"),
+  P2: outlineBadge("var(--badge-gold)"),
 };
 
 export default function EpicCard({
@@ -39,7 +52,8 @@ export default function EpicCard({
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
           <span
-            className={`rounded px-2 py-0.5 text-xs font-semibold ${PRIORITY_STYLE[epic.mvp_priority]}`}
+            className="rounded-md px-2.5 py-1 text-xs font-bold"
+            style={PRIORITY_STYLE[epic.mvp_priority]}
           >
             {epic.mvp_priority}
           </span>
