@@ -12,6 +12,7 @@ import { STATUSES as NOTE_STATUSES } from "@/lib/notes";
 import { getSectionBySlug } from "@/lib/sections";
 import EpicStatusControl from "@/components/epics/EpicStatusControl";
 import DecisionCard from "@/components/decisions/DecisionCard";
+import EpicRepoActivity from "@/components/epics/EpicRepoActivity";
 
 const PRIORITY_STYLE: Record<string, string> = {
   P0: "bg-[var(--color-forest-950)] text-[var(--color-primary-text)]",
@@ -155,6 +156,8 @@ export default function EpicDetailPage() {
           </div>
         ) : null}
       </div>
+
+      <EpicRepoActivity epicId={epic.id} />
 
       {linkedTasks.length > 0 ? (
         <div>

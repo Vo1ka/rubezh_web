@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { TRACKED_REPOS } from "@/lib/repos";
-
-const GITHUB_API = "https://api.github.com";
+import { GITHUB_API, githubHeaders } from "@/lib/github";
 
 type RepoStatus = {
   label: string;
@@ -20,15 +19,6 @@ type RepoStatus = {
   } | null;
   error?: string;
 };
-
-function githubHeaders(token: string) {
-  return {
-    Authorization: `Bearer ${token}`,
-    Accept: "application/vnd.github+json",
-    "X-GitHub-Api-Version": "2022-11-28",
-    "User-Agent": "rubezh-web-app",
-  };
-}
 
 async function fetchRepoStatus(
   owner: string,
