@@ -30,7 +30,7 @@ export default function KanbanColumn({
     <div
       onDragOver={(e) => e.preventDefault()}
       onDrop={() => onDrop(status)}
-      className="flex min-h-[16rem] flex-col gap-3 rounded-lg border bg-[var(--background)] p-3"
+      className="flex min-h-[16rem] min-w-0 flex-col gap-3 rounded-lg border bg-[var(--background)] p-3"
       style={{ borderColor: "var(--color-surface-border)" }}
     >
       <div className="flex items-center justify-between px-1">

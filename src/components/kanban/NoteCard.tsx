@@ -56,9 +56,9 @@ export default function NoteCard({
         <select
           value={note.epic_id ?? ""}
           onChange={(e) => onChangeEpic(note.id, e.target.value || null)}
-          className="rounded border bg-[var(--color-secondary-bg)] px-1.5 py-0.5 text-xs text-[var(--color-secondary-text)]"
+          className="w-24 min-w-0 truncate rounded border bg-[var(--color-secondary-bg)] px-1.5 py-0.5 text-xs text-[var(--color-secondary-text)]"
           style={{ borderColor: "var(--color-secondary-border)" }}
-          title="Привязать к Epic"
+          title={epics.find((e) => e.id === note.epic_id)?.title ?? "Привязать к Epic"}
         >
           <option value="">Без Epic</option>
           {epics.map((epic) => (
