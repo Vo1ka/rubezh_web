@@ -1,5 +1,4 @@
-import { STATUSES, PRIORITIES, CHANGE_TYPES } from "@/lib/notes";
-import type { NoteHistoryEntry } from "@/lib/notes";
+import { describeNoteHistoryEntry } from "@/lib/notes";
 import type { Epic } from "@/lib/epics";
 import { useNoteHistory } from "@/hooks/useNoteHistory";
 
@@ -10,30 +9,6 @@ function formatDateTime(value: string) {
     hour: "2-digit",
     minute: "2-digit",
   });
-}
-
-function resolveValue(entry: NoteHistoryEntry, value: string | null, epics: Epic[]) {
-  if (value === null) return "—";
-  if (entry.change_type === "status_changed") {
-    return STATUSES.find((s) => s.value === value)?.label ?? value;
-  }
-  if (entry.change_type === "priority_changed") {
-    return PRIORITIES.find((p) => p.value === value)?.label ?? value;
-  }
-  if (entry.change_type === "epic_changed") {
-    if (value === "null") return "без Epic";
-    return epics.find((e) => e.id === value)?.title ?? value;
-  }
-  return value;
-}
-
-function describeEntry(entry: NoteHistoryEntry, epics: Epic[]) {
-  const label = CHANGE_TYPES.find((c) => c.value === entry.change_type)?.label ?? entry.change_type;
-  if (entry.change_type === "created") return "Заметка создана";
-  if (entry.change_type === "deleted") return "Заметка удалена";
-  const from = resolveValue(entry, entry.old_value, epics);
-  const to = resolveValue(entry, entry.new_value, epics);
-  return `${label}: ${from} → ${to}`;
 }
 
 export default function NoteHistoryModal({
@@ -84,7 +59,7 @@ export default function NoteHistoryModal({
                 className="rounded-md border p-2 text-sm"
                 style={{ borderColor: "var(--color-surface-border)" }}
               >
-                <p className="text-[var(--color-secondary-text)]">{describeEntry(entry, epics)}</p>
+                <p className="text-[var(--color-secondary-text)]">{describeNoteHistoryEntry(entry, epics)}</p>
                 <p className="mt-1 text-xs text-[var(--color-body)]">{formatDateTime(entry.changed_at)}</p>
               </div>
             ))}

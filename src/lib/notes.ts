@@ -1,4 +1,5 @@
 import type { SectionSlug } from "./sections";
+import type { Epic } from "./epics";
 
 export const STATUSES = [
   { value: "backlog", label: "Бэклог" },
@@ -82,3 +83,27 @@ export type NoteHistoryEntry = {
   new_value: string | null;
   changed_at: string;
 };
+
+function resolveHistoryValue(entry: NoteHistoryEntry, value: string | null, epics: Epic[]) {
+  if (value === null) return "—";
+  if (entry.change_type === "status_changed") {
+    return STATUSES.find((s) => s.value === value)?.label ?? value;
+  }
+  if (entry.change_type === "priority_changed") {
+    return PRIORITIES.find((p) => p.value === value)?.label ?? value;
+  }
+  if (entry.change_type === "epic_changed") {
+    if (value === "null") return "без Epic";
+    return epics.find((e) => e.id === value)?.title ?? value;
+  }
+  return value;
+}
+
+export function describeNoteHistoryEntry(entry: NoteHistoryEntry, epics: Epic[]) {
+  const label = CHANGE_TYPES.find((c) => c.value === entry.change_type)?.label ?? entry.change_type;
+  if (entry.change_type === "created") return "Заметка создана";
+  if (entry.change_type === "deleted") return "Заметка удалена";
+  const from = resolveHistoryValue(entry, entry.old_value, epics);
+  const to = resolveHistoryValue(entry, entry.new_value, epics);
+  return `${label}: ${from} → ${to}`;
+}

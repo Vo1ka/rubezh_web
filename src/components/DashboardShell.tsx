@@ -1,16 +1,9 @@
 import type { ReactNode } from "react";
-import DashboardCard from "./DashboardCard";
 import CtaBanner from "./CtaBanner";
-
-type CardItem = {
-  title: string;
-  description: string;
-};
 
 type DashboardShellProps = {
   title: string;
   subtitle: string;
-  cards: CardItem[];
   cta: { title: string; description: string; action: string; href: string };
   children?: ReactNode;
 };
@@ -18,7 +11,6 @@ type DashboardShellProps = {
 export default function DashboardShell({
   title,
   subtitle,
-  cards,
   cta,
   children,
 }: DashboardShellProps) {
@@ -29,12 +21,6 @@ export default function DashboardShell({
           {title}
         </h1>
         <p className="mt-1 text-[var(--color-body)]">{subtitle}</p>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {cards.map((card) => (
-          <DashboardCard key={card.title} {...card} />
-        ))}
       </div>
 
       {children}
