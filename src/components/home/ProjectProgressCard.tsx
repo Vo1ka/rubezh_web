@@ -16,7 +16,7 @@ export default function ProjectProgressCard() {
 
   return (
     <div
-      className="rounded-lg border bg-[var(--color-surface-bg)] p-5"
+      className="rounded-lg border bg-[var(--color-secondary-bg)] p-5"
       style={{
         borderColor: "var(--color-surface-border)",
         borderTopWidth: 4,
