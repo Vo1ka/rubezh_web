@@ -12,7 +12,7 @@ const inputBorder = { borderColor: "var(--color-secondary-border)" };
 export default function DocumentForm({
   onSubmit,
 }: {
-  onSubmit: (input: NewDocumentInput) => Promise<void>;
+  onSubmit: (input: NewDocumentInput) => Promise<boolean>;
 }) {
   const [open, setOpen] = useState(false);
   const [docKey, setDocKey] = useState("");
@@ -25,7 +25,8 @@ export default function DocumentForm({
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !docKey.trim() || !url.trim() || !version.trim()) return;
-    await onSubmit({ doc_key: docKey, title, version, url, changelog, is_baseline: isBaseline });
+    const ok = await onSubmit({ doc_key: docKey, title, version, url, changelog, is_baseline: isBaseline });
+    if (!ok) return;
     setDocKey("");
     setTitle("");
     setVersion("");
@@ -57,6 +58,7 @@ export default function DocumentForm({
           value={docKey}
           onChange={(e) => setDocKey(e.target.value)}
           placeholder="Ключ документа (product-definition)"
+        required
           list="doc-key-presets"
           className={`${inputClass} sm:flex-1`}
           style={inputBorder}
@@ -71,6 +73,7 @@ export default function DocumentForm({
           value={version}
           onChange={(e) => setVersion(e.target.value)}
           placeholder="Версия (v4)"
+        required
           className={`${inputClass} sm:w-32`}
           style={inputBorder}
         />
@@ -79,6 +82,7 @@ export default function DocumentForm({
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Название документа (Product Definition)"
+        required
         className={inputClass}
         style={inputBorder}
       />
@@ -86,6 +90,7 @@ export default function DocumentForm({
         value={url}
         onChange={(e) => setUrl(e.target.value)}
         placeholder="Ссылка на документ"
+        required
         className={inputClass}
         style={inputBorder}
       />

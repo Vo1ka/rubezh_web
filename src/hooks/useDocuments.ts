@@ -51,9 +51,9 @@ export function useDocuments() {
   }, [instanceId, refresh]);
 
   const createDocument = useCallback(
-    async (input: NewDocumentInput) => {
+    async (input: NewDocumentInput): Promise<boolean> => {
       if (!supabase || !input.title.trim() || !input.doc_key.trim() || !input.url.trim())
-        return;
+        return false;
 
       if (input.is_baseline) {
         const { error: unsetError } = await supabase
@@ -63,7 +63,7 @@ export function useDocuments() {
           .eq("is_baseline", true);
         if (unsetError) {
           setError(unsetError.message);
-          return;
+          return false;
         }
       }
 
@@ -75,8 +75,12 @@ export function useDocuments() {
         changelog: input.changelog?.trim() || null,
         is_baseline: input.is_baseline,
       });
-      if (insertError) setError(insertError.message);
-      else await refresh();
+      if (insertError) {
+        setError(insertError.message);
+        return false;
+      }
+      await refresh();
+      return true;
     },
     [refresh]
   );
