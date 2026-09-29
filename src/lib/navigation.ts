@@ -38,6 +38,12 @@ export const NAV_TABS = [
       "Вехи интеграции, рекомендованный порядок работ и текущий спринт — из Development Plan.",
   },
   {
+    href: "/content-phase",
+    label: "Контент-фаза",
+    description:
+      "План контент-этапа: что уже готово, задачи по потокам и блокеры — статусы вживую из Kanban и Решений.",
+  },
+  {
     href: "/marketing-assessment",
     label: "Маркетинг",
     description:
