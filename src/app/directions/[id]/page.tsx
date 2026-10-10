@@ -10,6 +10,7 @@ import { directionFlags } from "@/lib/directions/staleness";
 import Markdown from "@/components/directions/Markdown";
 import DirectionWorkPanel from "@/components/directions/DirectionWorkPanel";
 import DirectionDocumentsPanel from "@/components/directions/DirectionDocumentsPanel";
+import DirectionActions from "@/components/directions/edit/DirectionActions";
 import { ErrorNote, ExternalLink, FlagBadge, Muted, Panel, StateBadge, formatDate } from "@/components/directions/ui";
 
 const JOURNAL_LIMIT = 10;
@@ -77,6 +78,17 @@ export default async function DirectionPage({ params }: { params: Promise<{ id: 
           ))}
         </ul>
       ) : null}
+
+      <DirectionActions
+        id={direction.id}
+        name={direction.name}
+        owner={direction.owner}
+        state={direction.state}
+        repos={direction.sources.filter((src) => src.paths.length > 0).map((src) => src.repo.split("/")[1])}
+        owners={[...new Set(registry.directions.map((d) => d.owner).filter((o): o is string => Boolean(o)))]}
+        statusBehind={flags.some((f) => f.kind === "status-behind")}
+        takeOverBriefing={<TakeOverBriefing entries={entries} />}
+      />
 
       <Panel
         title="Статус"
@@ -194,6 +206,24 @@ function JournalItem({ entry }: { entry: JournalEntry }) {
         {entry.typeDetail ? ` ${entry.typeDetail}` : ""}
       </p>
       {entry.body ? <Markdown>{entry.body}</Markdown> : null}
+    </div>
+  );
+}
+
+// RW-17: what to read before taking a direction — the last handoff and every
+// entry after it (the journal is newest-first, so those come before it).
+function TakeOverBriefing({ entries }: { entries: JournalEntry[] }) {
+  const handoffIndex = entries.findIndex((e) => e.type === "передача");
+  const shown = handoffIndex === -1 ? entries.slice(0, 5) : entries.slice(0, handoffIndex + 1);
+  if (shown.length === 0) return <Muted>В журнале пока нет записей.</Muted>;
+  return (
+    <div className="flex flex-col gap-3 rounded border p-3" style={{ borderColor: "var(--color-surface-border)" }}>
+      <p className="text-xs text-[var(--color-body)]/70">
+        {handoffIndex === -1 ? "Передач в журнале ещё не было — последние записи:" : "Последняя передача и всё после неё:"}
+      </p>
+      {shown.map((e, i) => (
+        <JournalItem key={`${e.heading}-${i}`} entry={e} />
+      ))}
     </div>
   );
 }

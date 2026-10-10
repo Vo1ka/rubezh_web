@@ -27,10 +27,19 @@ function requireToken(): string {
   return token;
 }
 
-async function githubGet(path: string, revalidate: number | false = CONTENT_REVALIDATE_SECONDS) {
+/** Cache tag for everything read from one repo — writes (RW-16) expire it. */
+export function repoCacheTag(repo: string) {
+  return `github:${repo}`;
+}
+
+/** `revalidate: "fresh"` bypasses the cache — for reads that a write is about to rely on. */
+async function githubGet(path: string, revalidate: number | false | "fresh" = CONTENT_REVALIDATE_SECONDS) {
+  const repo = path.match(/^\/repos\/([^/]+\/[^/]+)/)?.[1];
   const res = await fetch(`${GITHUB_API}${path}`, {
     headers: githubHeaders(requireToken()),
-    next: { revalidate },
+    ...(revalidate === "fresh"
+      ? { cache: "no-store" as const }
+      : { next: { revalidate, tags: repo && revalidate !== false ? [repoCacheTag(repo)] : [] } }),
   });
   return res;
 }
@@ -42,8 +51,22 @@ export type RepoFile = { content: string; sha: string; htmlUrl: string };
  * With `ref` set to a commit sha the result is immutable and cached forever.
  */
 export async function fetchRepoFile(repo: string, path: string, ref?: string): Promise<RepoFile | null> {
+  return readRepoFile(repo, path, ref, ref ? false : undefined);
+}
+
+/** Uncached read — the content and sha an editor starts from. */
+export async function fetchRepoFileFresh(repo: string, path: string): Promise<RepoFile | null> {
+  return readRepoFile(repo, path, undefined, "fresh");
+}
+
+async function readRepoFile(
+  repo: string,
+  path: string,
+  ref: string | undefined,
+  revalidate: number | false | "fresh" | undefined
+): Promise<RepoFile | null> {
   const query = ref ? `?ref=${encodeURIComponent(ref)}` : "";
-  const res = await githubGet(`/repos/${repo}/contents/${encodePath(path)}${query}`, ref ? false : undefined);
+  const res = await githubGet(`/repos/${repo}/contents/${encodePath(path)}${query}`, revalidate);
   if (res.status === 404) return null;
   if (!res.ok) throw new GitHubError(`GitHub API ${repo}/${path}: ${res.status} ${res.statusText}`, res.status);
   const data = await res.json();
@@ -88,7 +111,7 @@ function toCommit(c: RawCommit): RepoCommit {
 /** Latest commits on the default branch, optionally limited to a path prefix. */
 export async function fetchCommits(
   repo: string,
-  { path, perPage = 20, revalidate }: { path?: string; perPage?: number; revalidate?: number } = {}
+  { path, perPage = 20, revalidate }: { path?: string; perPage?: number; revalidate?: number | "fresh" } = {}
 ): Promise<RepoCommit[]> {
   const query = new URLSearchParams({ per_page: String(perPage) });
   if (path) query.set("path", path);
