@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { ENGINEERING_DECISIONS_LOG, sourceLinks } from "@/lib/documents";
 import { useState } from "react";
 import { useDecisions } from "@/hooks/useDecisions";
 import { useEpics } from "@/hooks/useEpics";
@@ -28,6 +30,11 @@ export default function DecisionsPage() {
         </h1>
         <p className="mt-1 text-[var(--color-body)]">
           Живут отдельно от конкретной встречи и ссылаются друг на друга и на Epic.
+          Инженерные решения D-xx ведутся в{" "}
+          <Link href={sourceLinks(ENGINEERING_DECISIONS_LOG).href} className="underline underline-offset-2">
+            логе решений mine_boevka
+          </Link>
+          ; здесь на них ссылаются по номеру.
         </p>
       </div>
 

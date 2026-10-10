@@ -1,66 +1,41 @@
-"use client";
+import { loadRegistry } from "@/lib/directions/registry";
+import { loadRepoDocuments, type RepoDocument } from "@/lib/repoDocuments";
+import RepoDocumentList from "@/components/documents/RepoDocumentList";
+import DocumentRegistry from "@/components/documents/DocumentRegistry";
+import { ErrorNote, Panel } from "@/components/directions/ui";
 
-import { useDocuments } from "@/hooks/useDocuments";
-import DocumentGroup from "@/components/documents/DocumentGroup";
-import DocumentForm from "@/components/documents/DocumentForm";
-
-export default function DocumentsPage() {
-  const { documents, loading, error, configured, createDocument, deleteDocument } =
-    useDocuments();
-
-  const groups = documents.reduce<Record<string, typeof documents>>((acc, doc) => {
-    (acc[doc.doc_key] ??= []).push(doc);
-    return acc;
-  }, {});
+// RW-20: documents committed to the repos are listed automatically; the
+// hand-kept version registry below stays for documents that predate that.
+export default async function DocumentsPage() {
+  const registry = await loadRegistry();
+  let repoDocs: { ok: true; value: RepoDocument[] } | { ok: false; error: string };
+  try {
+    repoDocs = { ok: true, value: await loadRepoDocuments(registry.ok ? registry.directions : []) };
+  } catch (e) {
+    repoDocs = { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-10 sm:px-6">
       <div>
-        <h1 className="text-2xl font-bold text-[var(--color-title)]">
-          Реестр документов
-        </h1>
+        <h1 className="text-2xl font-bold text-[var(--color-title)]">Реестр документов</h1>
         <p className="mt-1 text-[var(--color-body)]">
-          Версии и текущая утверждённая база для Product Definition, Epic Map,
-          Game Design Spec, Technical Architecture — каждая роль тянет данные из
-          одного места.
+          Документы живут в репозиториях: общие — в <code>docs/</code>, документы направления — в{" "}
+          <code>directions/&lt;id&gt;/docs/</code>. Версия документа — его история в git.
         </p>
       </div>
 
-      {!configured ? (
-        <div
-          className="rounded-lg border p-4 text-sm text-[var(--color-body)]"
-          style={{ borderColor: "var(--color-surface-border)" }}
-        >
-          Supabase не настроен — реестр недоступен.
-        </div>
-      ) : (
-        <>
-          <DocumentForm onSubmit={createDocument} />
+      <Panel title="В репозиториях">
+        {repoDocs.ok ? (
+          <RepoDocumentList documents={repoDocs.value} />
+        ) : (
+          <ErrorNote>Список документов из репозиториев недоступен: {repoDocs.error}</ErrorNote>
+        )}
+      </Panel>
 
-          {error ? (
-            <p className="text-sm text-[var(--color-title)]">Ошибка: {error}</p>
-          ) : null}
-
-          {loading ? (
-            <p className="text-sm text-[var(--color-body)]">Загрузка…</p>
-          ) : Object.keys(groups).length === 0 ? (
-            <p className="text-sm text-[var(--color-body)]">
-              Пока нет ни одного документа в реестре.
-            </p>
-          ) : (
-            <div className="flex flex-col gap-4">
-              {Object.entries(groups).map(([docKey, versions]) => (
-                <DocumentGroup
-                  key={docKey}
-                  docKey={docKey}
-                  versions={versions}
-                  onDelete={deleteDocument}
-                />
-              ))}
-            </div>
-          )}
-        </>
-      )}
+      <Panel title="Версии (ручной реестр)">
+        <DocumentRegistry />
+      </Panel>
     </div>
   );
 }

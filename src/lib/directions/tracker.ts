@@ -3,6 +3,7 @@ import type { Epic } from "@/lib/epics";
 import type { Note } from "@/lib/notes";
 import type { DecisionRecord } from "@/lib/decisions";
 import type { ProposalRecord } from "@/lib/proposals";
+import type { DocumentRecord } from "@/lib/documents";
 import type { Loaded } from "./data";
 
 // RW-14 block 5: the site-database side of a direction page — work tagged
@@ -79,4 +80,16 @@ export async function loadDirectionCounts(): Promise<Loaded<DirectionCounts>> {
     if (((row.directions as string[] | null) ?? []).length === 0) counts.untagged.epics++;
   }
   return { ok: true, value: counts };
+}
+
+/** Hand-registry documents tagged with the direction (RW-13), newest version first. */
+export async function loadDirectionRegistryDocuments(id: string): Promise<Loaded<DocumentRecord[]>> {
+  if (!supabase) return { ok: false, error: "Supabase не настроен" };
+  const { data, error } = await supabase
+    .from("documents")
+    .select("*")
+    .contains("directions", [id])
+    .order("created_at", { ascending: false });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true, value: data ?? [] };
 }

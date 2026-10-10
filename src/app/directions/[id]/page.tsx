@@ -1,20 +1,21 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { loadDirection } from "@/lib/directions/registry";
-import { directionFolderUrl, loadCommits, loadJournal, loadStatus } from "@/lib/directions/data";
+import { directionFolderUrl, loadCommits, loadJournal, loadStatus, type Loaded } from "@/lib/directions/data";
 import { STATUS_SECTIONS } from "@/lib/directions/status";
 import { lastHandoff, type JournalEntry } from "@/lib/directions/journal";
-import { loadDirectionWork } from "@/lib/directions/tracker";
+import { loadDirectionRegistryDocuments, loadDirectionWork } from "@/lib/directions/tracker";
+import { loadRepoDocuments, type RepoDocument } from "@/lib/repoDocuments";
 import { directionFlags } from "@/lib/directions/staleness";
 import Markdown from "@/components/directions/Markdown";
 import DirectionWorkPanel from "@/components/directions/DirectionWorkPanel";
+import DirectionDocumentsPanel from "@/components/directions/DirectionDocumentsPanel";
 import { ErrorNote, ExternalLink, FlagBadge, Muted, Panel, StateBadge, formatDate } from "@/components/directions/ui";
 
 const JOURNAL_LIMIT = 10;
 
 // RW-14: everything needed to (re)enter a direction, in the order from the spec:
-// STATUS → flags → last handoff → journal → tagged work → commits.
-// Documents (RW-20) join this page once that lands.
+// STATUS → flags → last handoff → journal → tagged work → documents → commits.
 export default async function DirectionPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { registry, direction } = await loadDirection(id);
@@ -28,11 +29,15 @@ export default async function DirectionPage({ params }: { params: Promise<{ id: 
   }
   if (!direction) notFound();
 
-  const [status, journal, commits, work] = await Promise.all([
+  const [status, journal, commits, work, repoDocs, registryDocs] = await Promise.all([
     loadStatus(direction.id),
     loadJournal(direction.id),
     loadCommits(direction, 10),
     loadDirectionWork(direction.id),
+    loadRepoDocuments(registry.directions)
+      .then((docs): Loaded<RepoDocument[]> => ({ ok: true, value: docs.filter((d) => d.directions.includes(direction.id)) }))
+      .catch((e): Loaded<RepoDocument[]> => ({ ok: false, error: e instanceof Error ? e.message : String(e) })),
+    loadDirectionRegistryDocuments(direction.id),
   ]);
 
   const parsed = status.ok && status.value ? status.value.parsed : null;
@@ -136,6 +141,8 @@ export default async function DirectionPage({ params }: { params: Promise<{ id: 
       </Panel>
 
       <DirectionWorkPanel work={work} />
+
+      <DirectionDocumentsPanel id={direction.id} repoDocs={repoDocs} registryDocs={registryDocs} />
 
       <Panel title="Последние коммиты">
         {!commits.ok ? (

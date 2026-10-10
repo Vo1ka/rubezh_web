@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useId, useState } from "react";
 import { supabase, isSupabaseConfigured } from "@/lib/supabaseClient";
-import type { DocumentRecord, NewDocumentInput } from "@/lib/documents";
+import { sourceLinks, type DocumentRecord, type NewDocumentInput } from "@/lib/documents";
 
 export function useDocuments() {
   const instanceId = useId();
@@ -52,8 +52,9 @@ export function useDocuments() {
 
   const createDocument = useCallback(
     async (input: NewDocumentInput): Promise<boolean> => {
-      if (!supabase || !input.title.trim() || !input.doc_key.trim() || !input.url.trim())
-        return false;
+      const sourcePath = input.source_path?.trim() || null;
+      const url = input.url.trim() || (sourcePath ? sourceLinks(sourcePath).githubUrl : "");
+      if (!supabase || !input.title.trim() || !input.doc_key.trim() || !url) return false;
 
       if (input.is_baseline) {
         const { error: unsetError } = await supabase
@@ -71,9 +72,11 @@ export function useDocuments() {
         doc_key: input.doc_key.trim(),
         title: input.title.trim(),
         version: input.version.trim(),
-        url: input.url.trim(),
+        url,
         changelog: input.changelog?.trim() || null,
         is_baseline: input.is_baseline,
+        directions: input.directions,
+        source_path: sourcePath,
       });
       if (insertError) {
         setError(insertError.message);
@@ -98,6 +101,16 @@ export function useDocuments() {
     [refresh]
   );
 
+  const updateDirections = useCallback(
+    async (id: string, directions: string[]) => {
+      if (!supabase) return;
+      const { error: updateError } = await supabase.from("documents").update({ directions }).eq("id", id);
+      if (updateError) setError(updateError.message);
+      else await refresh();
+    },
+    [refresh]
+  );
+
   return {
     documents,
     loading,
@@ -105,5 +118,6 @@ export function useDocuments() {
     configured: isSupabaseConfigured,
     createDocument,
     deleteDocument,
+    updateDirections,
   };
 }

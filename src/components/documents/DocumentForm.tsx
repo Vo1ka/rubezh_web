@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import type { NewDocumentInput } from "@/lib/documents";
 import { DOC_KEY_PRESETS } from "@/lib/documents";
+import { DirectionField } from "@/components/directions/DirectionPickers";
 
 const inputClass =
   "w-full rounded-md border bg-[var(--color-secondary-bg)] px-3 py-2 text-sm text-[var(--color-secondary-text)] placeholder:text-[var(--color-body)]";
@@ -21,11 +22,22 @@ export default function DocumentForm({
   const [url, setUrl] = useState("");
   const [changelog, setChangelog] = useState("");
   const [isBaseline, setIsBaseline] = useState(true);
+  const [sourcePath, setSourcePath] = useState("");
+  const [directions, setDirections] = useState<string[]>([]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !docKey.trim() || !url.trim() || !version.trim()) return;
-    const ok = await onSubmit({ doc_key: docKey, title, version, url, changelog, is_baseline: isBaseline });
+    if (!title.trim() || !docKey.trim() || !version.trim() || (!url.trim() && !sourcePath.trim())) return;
+    const ok = await onSubmit({
+      doc_key: docKey,
+      title,
+      version,
+      url,
+      changelog,
+      is_baseline: isBaseline,
+      directions,
+      source_path: sourcePath,
+    });
     if (!ok) return;
     setDocKey("");
     setTitle("");
@@ -33,6 +45,8 @@ export default function DocumentForm({
     setUrl("");
     setChangelog("");
     setIsBaseline(true);
+    setSourcePath("");
+    setDirections([]);
     setOpen(false);
   };
 
@@ -87,10 +101,17 @@ export default function DocumentForm({
         style={inputBorder}
       />
       <input
+        value={sourcePath}
+        onChange={(e) => setSourcePath(e.target.value)}
+        placeholder="Источник: путь в репо (rubezh_full/docs/product/product-definition.md)"
+        className={inputClass}
+        style={inputBorder}
+      />
+      <input
         value={url}
         onChange={(e) => setUrl(e.target.value)}
-        placeholder="Ссылка на документ"
-        required
+        placeholder={sourcePath.trim() ? "Ссылка (необязательно — возьмём из пути в репо)" : "Ссылка на документ"}
+        required={!sourcePath.trim()}
         className={inputClass}
         style={inputBorder}
       />
@@ -102,6 +123,7 @@ export default function DocumentForm({
         className={inputClass}
         style={inputBorder}
       />
+      <DirectionField value={directions} onChange={setDirections} />
       <label className="flex items-center gap-2 text-sm text-[var(--color-secondary-text)]">
         <input
           type="checkbox"

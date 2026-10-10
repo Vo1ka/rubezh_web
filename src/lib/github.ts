@@ -88,11 +88,11 @@ function toCommit(c: RawCommit): RepoCommit {
 /** Latest commits on the default branch, optionally limited to a path prefix. */
 export async function fetchCommits(
   repo: string,
-  { path, perPage = 20 }: { path?: string; perPage?: number } = {}
+  { path, perPage = 20, revalidate }: { path?: string; perPage?: number; revalidate?: number } = {}
 ): Promise<RepoCommit[]> {
   const query = new URLSearchParams({ per_page: String(perPage) });
   if (path) query.set("path", path);
-  const res = await githubGet(`/repos/${repo}/commits?${query}`);
+  const res = await githubGet(`/repos/${repo}/commits?${query}`, revalidate);
   if (!res.ok) throw new GitHubError(`GitHub API ${repo} commits: ${res.status} ${res.statusText}`, res.status);
   return ((await res.json()) as RawCommit[]).map(toCommit);
 }
@@ -103,6 +103,25 @@ export async function fetchCommitFiles(repo: string, sha: string): Promise<strin
   if (!res.ok) throw new GitHubError(`GitHub API ${repo}@${sha}: ${res.status} ${res.statusText}`, res.status);
   const data = (await res.json()) as RawCommit;
   return (data.files ?? []).map((f) => f.filename);
+}
+
+export type TreeEntry = { path: string; sha: string; size: number };
+
+/** Every file on the default branch, in one request. */
+export async function fetchTree(repo: string): Promise<TreeEntry[]> {
+  const res = await githubGet(`/repos/${repo}/git/trees/HEAD?recursive=1`);
+  if (!res.ok) throw new GitHubError(`GitHub API ${repo} tree: ${res.status} ${res.statusText}`, res.status);
+  const data = (await res.json()) as { tree: { path: string; sha: string; size?: number; type: string }[]; truncated: boolean };
+  if (data.truncated) throw new GitHubError(`${repo}: дерево файлов слишком большое для одного запроса`);
+  return data.tree.filter((t) => t.type === "blob").map((t) => ({ path: t.path, sha: t.sha, size: t.size ?? 0 }));
+}
+
+/** A file's text by blob sha. Blobs are content-addressed, so this is cached forever. */
+export async function fetchBlobText(repo: string, sha: string): Promise<string> {
+  const res = await githubGet(`/repos/${repo}/git/blobs/${sha}`, false);
+  if (!res.ok) throw new GitHubError(`GitHub API ${repo} blob ${sha}: ${res.status} ${res.statusText}`, res.status);
+  const data = (await res.json()) as { content: string; encoding: string };
+  return Buffer.from(data.content, data.encoding === "base64" ? "base64" : "utf8").toString("utf8");
 }
 
 export type Comparison = {

@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import DecisionRefs from "@/components/decisions/DecisionRefs";
 import type { DecisionRecord } from "@/lib/decisions";
 import { RECORD_TYPES, STATUS_OPTIONS } from "@/lib/decisions";
 import type { Epic } from "@/lib/epics";
@@ -61,7 +62,9 @@ export default function DecisionCard({
               {statusLabel}
             </span>
           ) : null}
-          <h3 className="font-semibold text-[var(--color-title)]">{record.title}</h3>
+          <h3 className="font-semibold text-[var(--color-title)]">
+            <DecisionRefs text={record.title} />
+          </h3>
         </div>
         <button
           onClick={() => onDelete(record.id)}
@@ -74,7 +77,7 @@ export default function DecisionCard({
 
       {record.description ? (
         <p className="mt-2 whitespace-pre-wrap text-sm text-[var(--color-secondary-text)]">
-          {record.description}
+          <DecisionRefs text={record.description} />
         </p>
       ) : null}
 

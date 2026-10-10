@@ -1,4 +1,6 @@
-import type { DocumentRecord } from "@/lib/documents";
+import Link from "next/link";
+import { sourceLinks, type DocumentRecord } from "@/lib/documents";
+import { DirectionTags } from "@/components/directions/DirectionPickers";
 
 function formatDate(value: string) {
   return new Date(value).toLocaleDateString("ru-RU", {
@@ -52,10 +54,12 @@ export default function DocumentGroup({
   docKey,
   versions,
   onDelete,
+  onChangeDirections,
 }: {
   docKey: string;
   versions: DocumentRecord[];
   onDelete: (id: string) => void;
+  onChangeDirections: (id: string, directions: string[]) => void;
 }) {
   const baseline = versions.find((v) => v.is_baseline);
   const title = versions[0]?.title ?? docKey;
@@ -108,6 +112,21 @@ export default function DocumentGroup({
                 </p>
               ) : null}
             </button>
+            <div className="flex flex-col items-end gap-1">
+              <DirectionTags
+                value={v.directions ?? []}
+                onChange={(next) => onChangeDirections(v.id, next)}
+              />
+              {v.source_path ? (
+                <Link
+                  href={sourceLinks(v.source_path).href}
+                  className="font-mono text-xs text-[var(--color-body)] hover:underline"
+                  title="Канонический файл в репозитории"
+                >
+                  {v.source_path}
+                </Link>
+              ) : null}
+            </div>
             <button
               onClick={() => onDelete(v.id)}
               className="text-[var(--color-body)] opacity-0 transition-opacity group-hover:opacity-60 hover:!opacity-100"
