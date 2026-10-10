@@ -18,10 +18,7 @@ export default function Header() {
         </span>
         <nav className="flex min-w-0 flex-1 flex-wrap gap-1">
           {NAV_TABS.map((tab) => {
-            const isActive =
-              tab.href === "/"
-                ? pathname === "/"
-                : pathname.startsWith(tab.href);
+            const isActive = pathname.startsWith(tab.href);
             return (
               <Link
                 key={tab.href}
