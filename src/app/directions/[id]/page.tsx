@@ -5,6 +5,7 @@ import { directionFolderUrl, loadCommits, loadJournal, loadStatus } from "@/lib/
 import { STATUS_SECTIONS } from "@/lib/directions/status";
 import { lastHandoff, type JournalEntry } from "@/lib/directions/journal";
 import { loadDirectionWork } from "@/lib/directions/tracker";
+import { directionFlags } from "@/lib/directions/staleness";
 import Markdown from "@/components/directions/Markdown";
 import DirectionWorkPanel from "@/components/directions/DirectionWorkPanel";
 import { ErrorNote, ExternalLink, FlagBadge, Muted, Panel, StateBadge, formatDate } from "@/components/directions/ui";
@@ -38,10 +39,11 @@ export default async function DirectionPage({ params }: { params: Promise<{ id: 
   const entries = journal.ok && journal.value ? journal.value.entries : [];
   const handoff = lastHandoff(entries);
 
-  const flags: string[] = [];
-  if (!status.ok) flags.push("STATUS не прочитан");
-  else if (!status.value) flags.push("Нет STATUS");
-  else if (parsed && parsed.problems.length > 0) flags.push(`Формат STATUS нарушен: ${parsed.problems.join("; ")}`);
+  const flags = await directionFlags(direction, {
+    status,
+    journal,
+    activeCards: work.ok ? work.value.notes.length : 0,
+  });
 
   return (
     <PageFrame>
@@ -61,11 +63,14 @@ export default async function DirectionPage({ params }: { params: Promise<{ id: 
       </div>
 
       {flags.length > 0 ? (
-        <div className="flex flex-wrap gap-1.5">
+        <ul className="flex flex-col gap-1.5">
           {flags.map((f) => (
-            <FlagBadge key={f}>{f}</FlagBadge>
+            <li key={f.kind} className="flex flex-wrap items-baseline gap-2 text-sm text-[var(--color-body)]">
+              <FlagBadge>{f.label}</FlagBadge>
+              {f.detail ? <span>{f.detail}</span> : null}
+            </li>
           ))}
-        </div>
+        </ul>
       ) : null}
 
       <Panel

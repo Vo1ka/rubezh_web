@@ -37,9 +37,13 @@ async function githubGet(path: string, revalidate: number | false = CONTENT_REVA
 
 export type RepoFile = { content: string; sha: string; htmlUrl: string };
 
-/** Reads a text file from `owner/repo`. Returns null if the file doesn't exist. */
-export async function fetchRepoFile(repo: string, path: string): Promise<RepoFile | null> {
-  const res = await githubGet(`/repos/${repo}/contents/${encodePath(path)}`);
+/**
+ * Reads a text file from `owner/repo`. Returns null if the file doesn't exist.
+ * With `ref` set to a commit sha the result is immutable and cached forever.
+ */
+export async function fetchRepoFile(repo: string, path: string, ref?: string): Promise<RepoFile | null> {
+  const query = ref ? `?ref=${encodeURIComponent(ref)}` : "";
+  const res = await githubGet(`/repos/${repo}/contents/${encodePath(path)}${query}`, ref ? false : undefined);
   if (res.status === 404) return null;
   if (!res.ok) throw new GitHubError(`GitHub API ${repo}/${path}: ${res.status} ${res.statusText}`, res.status);
   const data = await res.json();
@@ -99,6 +103,31 @@ export async function fetchCommitFiles(repo: string, sha: string): Promise<strin
   if (!res.ok) throw new GitHubError(`GitHub API ${repo}@${sha}: ${res.status} ${res.statusText}`, res.status);
   const data = (await res.json()) as RawCommit;
   return (data.files ?? []).map((f) => f.filename);
+}
+
+export type Comparison = {
+  aheadBy: number;
+  aheadShas: Set<string>;
+  /** GitHub lists at most a page of commits; past that, compare by date against `baseDate`. */
+  truncated: boolean;
+  baseDate: string;
+};
+
+/**
+ * Commits on the default branch that `base` doesn't contain yet.
+ * Returns null when `base` is unknown to GitHub (typo, rewritten history).
+ */
+export async function fetchComparison(repo: string, base: string): Promise<Comparison | null> {
+  const res = await githubGet(`/repos/${repo}/compare/${encodeURIComponent(base)}...HEAD?per_page=100`);
+  if (res.status === 404) return null;
+  if (!res.ok) throw new GitHubError(`GitHub API ${repo} compare ${base}: ${res.status} ${res.statusText}`, res.status);
+  const data = (await res.json()) as { ahead_by: number; commits: RawCommit[]; base_commit: RawCommit };
+  return {
+    aheadBy: data.ahead_by,
+    aheadShas: new Set(data.commits.map((c) => c.sha)),
+    truncated: data.commits.length < data.ahead_by,
+    baseDate: data.base_commit.commit.author?.date ?? "",
+  };
 }
 
 function encodePath(path: string) {

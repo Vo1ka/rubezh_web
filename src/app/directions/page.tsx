@@ -1,14 +1,16 @@
 import Link from "next/link";
 import { loadRegistry, REGISTRY_PATH, type Direction } from "@/lib/directions/registry";
-import { loadCommits, loadStatus } from "@/lib/directions/data";
+import { loadCommits, loadJournal, loadStatus } from "@/lib/directions/data";
 import { statusSection } from "@/lib/directions/status";
-import { loadBlockingCounts } from "@/lib/directions/tracker";
+import { loadDirectionCounts, type DirectionCounts } from "@/lib/directions/tracker";
+import { directionFlags } from "@/lib/directions/staleness";
 import { ErrorNote, ExternalLink, FlagBadge, Muted, StateBadge, formatDate } from "@/components/directions/ui";
 
 // RW-14: the site's entry point — one row per direction from the registry.
 export default async function DirectionsPage() {
-  const [registry, blocking] = await Promise.all([loadRegistry(), loadBlockingCounts()]);
-  const blockingCounts = blocking.ok ? blocking.value : {};
+  const [registry, counts] = await Promise.all([loadRegistry(), loadDirectionCounts()]);
+  const c: DirectionCounts = counts.ok ? counts.value : { blocking: {}, activeCards: {}, untagged: { epics: 0, notes: 0 } };
+  const untagged = c.untagged.epics + c.untagged.notes;
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 sm:px-6">
@@ -22,10 +24,22 @@ export default async function DirectionsPage() {
         {registry.fileUrl ? <ExternalLink href={registry.fileUrl}>{REGISTRY_PATH} в репозитории</ExternalLink> : null}
       </div>
 
+      {untagged > 0 ? (
+        <p className="text-sm text-[var(--color-body)]">
+          ⚠ Без направления: <Link href="/epics" className="underline underline-offset-2">Epic — {c.untagged.epics}</Link>, карточек
+          Kanban — {c.untagged.notes}. Отметьте направление, иначе эта работа не видна на страницах направлений.
+        </p>
+      ) : null}
+
       {registry.ok ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {registry.directions.map((d) => (
-            <DirectionCard key={d.id} direction={d} blockingQuestions={blockingCounts[d.id] ?? 0} />
+            <DirectionCard
+              key={d.id}
+              direction={d}
+              blockingQuestions={c.blocking[d.id] ?? 0}
+              activeCards={c.activeCards[d.id] ?? 0}
+            />
           ))}
         </div>
       ) : (
@@ -35,8 +49,21 @@ export default async function DirectionsPage() {
   );
 }
 
-async function DirectionCard({ direction, blockingQuestions }: { direction: Direction; blockingQuestions: number }) {
-  const [status, commits] = await Promise.all([loadStatus(direction.id), loadCommits(direction, 1)]);
+async function DirectionCard({
+  direction,
+  blockingQuestions,
+  activeCards,
+}: {
+  direction: Direction;
+  blockingQuestions: number;
+  activeCards: number;
+}) {
+  const [status, journal, commits] = await Promise.all([
+    loadStatus(direction.id),
+    loadJournal(direction.id),
+    loadCommits(direction, 1),
+  ]);
+  const flags = await directionFlags(direction, { status, journal, activeCards });
   const parsed = status.ok && status.value ? status.value.parsed : null;
   const summary = parsed ? statusSection(parsed, "Коротко") : null;
   const lastCommit = commits.ok ? commits.value[0] : undefined;
@@ -66,9 +93,11 @@ async function DirectionCard({ direction, blockingQuestions }: { direction: Dire
       )}
 
       <div className="flex flex-wrap gap-1.5">
-        {!status.ok ? <FlagBadge>STATUS не прочитан</FlagBadge> : null}
-        {status.ok && !status.value ? <FlagBadge>Нет STATUS</FlagBadge> : null}
-        {parsed && parsed.problems.length > 0 ? <FlagBadge>Формат STATUS нарушен</FlagBadge> : null}
+        {flags.map((f) => (
+          <FlagBadge key={f.kind} title={f.detail}>
+            {f.label}
+          </FlagBadge>
+        ))}
         {blockingQuestions > 0 ? <FlagBadge>Блокирующих вопросов: {blockingQuestions}</FlagBadge> : null}
       </div>
 

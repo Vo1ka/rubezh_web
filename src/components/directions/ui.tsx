@@ -15,9 +15,10 @@ export function StateBadge({ state }: { state: string }) {
   );
 }
 
-export function FlagBadge({ children }: { children: ReactNode }) {
+export function FlagBadge({ children, title }: { children: ReactNode; title?: string }) {
   return (
     <span
+      title={title}
       className="rounded px-2 py-0.5 text-xs font-semibold"
       style={{ background: "transparent", color: "var(--badge-text)", border: "1.5px solid var(--badge-dark-orange)" }}
     >

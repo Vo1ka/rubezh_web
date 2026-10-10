@@ -46,18 +46,37 @@ export async function loadDirectionWork(id: string): Promise<Loaded<DirectionWor
   };
 }
 
-/** Open questions marked blocking, counted per direction id — for the overview. */
-export async function loadBlockingCounts(): Promise<Loaded<Record<string, number>>> {
+export type DirectionCounts = {
+  /** Open questions marked blocking, per direction id. */
+  blocking: Record<string, number>;
+  /** Kanban cards not done, per direction id (RW-15 "status is old" rule). */
+  activeCards: Record<string, number>;
+  /** RW-15 extension of RW-7: active work nobody has assigned to a direction. */
+  untagged: { epics: number; notes: number };
+};
+
+/** Per-direction counters for the overview, in one round of queries. */
+export async function loadDirectionCounts(): Promise<Loaded<DirectionCounts>> {
   if (!supabase) return { ok: false, error: "Supabase не настроен" };
-  const { data, error } = await supabase
-    .from("decisions")
-    .select("directions")
-    .eq("type", "open_question")
-    .eq("status", "blocking");
+  const [blocking, notes, epics] = await Promise.all([
+    supabase.from("decisions").select("directions").eq("type", "open_question").eq("status", "blocking"),
+    supabase.from("notes").select("direction").neq("status", "done"),
+    supabase.from("epics").select("directions").neq("status", "done"),
+  ]);
+  const error = blocking.error ?? notes.error ?? epics.error;
   if (error) return { ok: false, error: error.message };
-  const counts: Record<string, number> = {};
-  for (const row of data ?? []) {
-    for (const d of (row.directions as string[] | null) ?? []) counts[d] = (counts[d] ?? 0) + 1;
+
+  const counts: DirectionCounts = { blocking: {}, activeCards: {}, untagged: { epics: 0, notes: 0 } };
+  for (const row of blocking.data ?? []) {
+    for (const d of (row.directions as string[] | null) ?? []) counts.blocking[d] = (counts.blocking[d] ?? 0) + 1;
+  }
+  for (const row of notes.data ?? []) {
+    const d = row.direction as string | null;
+    if (d) counts.activeCards[d] = (counts.activeCards[d] ?? 0) + 1;
+    else counts.untagged.notes++;
+  }
+  for (const row of epics.data ?? []) {
+    if (((row.directions as string[] | null) ?? []).length === 0) counts.untagged.epics++;
   }
   return { ok: true, value: counts };
 }
