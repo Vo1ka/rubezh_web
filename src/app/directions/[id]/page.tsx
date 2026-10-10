@@ -4,14 +4,16 @@ import { loadDirection } from "@/lib/directions/registry";
 import { directionFolderUrl, loadCommits, loadJournal, loadStatus } from "@/lib/directions/data";
 import { STATUS_SECTIONS } from "@/lib/directions/status";
 import { lastHandoff, type JournalEntry } from "@/lib/directions/journal";
+import { loadDirectionWork } from "@/lib/directions/tracker";
 import Markdown from "@/components/directions/Markdown";
+import DirectionWorkPanel from "@/components/directions/DirectionWorkPanel";
 import { ErrorNote, ExternalLink, FlagBadge, Muted, Panel, StateBadge, formatDate } from "@/components/directions/ui";
 
 const JOURNAL_LIMIT = 10;
 
 // RW-14: everything needed to (re)enter a direction, in the order from the spec:
-// STATUS → flags → last handoff → journal → commits. Epics/cards/decisions
-// (RW-13) and documents (RW-20) join this page once those land.
+// STATUS → flags → last handoff → journal → tagged work → commits.
+// Documents (RW-20) join this page once that lands.
 export default async function DirectionPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { registry, direction } = await loadDirection(id);
@@ -25,10 +27,11 @@ export default async function DirectionPage({ params }: { params: Promise<{ id: 
   }
   if (!direction) notFound();
 
-  const [status, journal, commits] = await Promise.all([
+  const [status, journal, commits, work] = await Promise.all([
     loadStatus(direction.id),
     loadJournal(direction.id),
     loadCommits(direction, 10),
+    loadDirectionWork(direction.id),
   ]);
 
   const parsed = status.ok && status.value ? status.value.parsed : null;
@@ -126,6 +129,8 @@ export default async function DirectionPage({ params }: { params: Promise<{ id: 
           </div>
         )}
       </Panel>
+
+      <DirectionWorkPanel work={work} />
 
       <Panel title="Последние коммиты">
         {!commits.ok ? (

@@ -59,10 +59,24 @@ export function useDecisions() {
         status: input.status || null,
         epic_id: input.epic_id || null,
         related_ids: input.related_ids,
+        directions: input.directions,
         owner: input.owner || null,
         proposal_id: input.proposal_id || null,
       });
       if (insertError) setError(insertError.message);
+      else await refresh();
+    },
+    [refresh]
+  );
+
+  const updateDirections = useCallback(
+    async (id: string, directions: string[]) => {
+      if (!supabase) return;
+      const { error: updateError } = await supabase
+        .from("decisions")
+        .update({ directions })
+        .eq("id", id);
+      if (updateError) setError(updateError.message);
       else await refresh();
     },
     [refresh]
@@ -87,6 +101,7 @@ export function useDecisions() {
     error,
     configured: isSupabaseConfigured,
     createRecord,
+    updateDirections,
     deleteRecord,
   };
 }

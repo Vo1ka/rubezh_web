@@ -6,6 +6,7 @@ import type { Note } from "@/lib/notes";
 import { PRIORITIES } from "@/lib/notes";
 import type { Epic } from "@/lib/epics";
 import NoteHistoryModal from "./NoteHistoryModal";
+import { DirectionSelect } from "@/components/directions/DirectionPickers";
 
 const solidBadge = (background: string): CSSProperties => ({
   background,
@@ -33,6 +34,7 @@ type NoteCardProps = {
   onDragStart: (e: DragEvent<HTMLDivElement>, id: string) => void;
   onCyclePriority: (id: string, current: Note["priority"]) => void;
   onChangeEpic: (id: string, epicId: string | null) => void;
+  onChangeDirection: (id: string, direction: string | null) => void;
   onToggleSelect: (id: string) => void;
   onDelete: (id: string) => void;
 };
@@ -45,6 +47,7 @@ export default function NoteCard({
   onDragStart,
   onCyclePriority,
   onChangeEpic,
+  onChangeDirection,
   onToggleSelect,
   onDelete,
 }: NoteCardProps) {
@@ -123,6 +126,12 @@ export default function NoteCard({
             </option>
           ))}
         </select>
+        <DirectionSelect
+          value={note.direction ?? null}
+          onChange={(direction) => onChangeDirection(note.id, direction)}
+          disabled={selectMode}
+          className="w-24"
+        />
       </div>
 
       {showHistory ? (

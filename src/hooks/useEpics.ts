@@ -47,6 +47,7 @@ export function useEpics() {
         mvp_priority: input.mvp_priority,
         risk_level: input.risk_level || null,
         depends_on: input.depends_on,
+        directions: input.directions,
         position: maxPosition + 1,
       });
       if (insertError) setMutationError(insertError.message);
@@ -61,6 +62,16 @@ export function useEpics() {
   const updateStatus = useCallback(async (id: string, status: EpicStatus) => {
     if (!supabase) return;
     const { error: updateError } = await supabase.from("epics").update({ status }).eq("id", id);
+    if (updateError) setMutationError(updateError.message);
+    else {
+      setMutationError(null);
+      refreshQuery(EPICS_KEY);
+    }
+  }, []);
+
+  const updateDirections = useCallback(async (id: string, directions: string[]) => {
+    if (!supabase) return;
+    const { error: updateError } = await supabase.from("epics").update({ directions }).eq("id", id);
     if (updateError) setMutationError(updateError.message);
     else {
       setMutationError(null);
@@ -85,6 +96,7 @@ export function useEpics() {
     configured: isSupabaseConfigured,
     createEpic,
     updateStatus,
+    updateDirections,
     deleteEpic,
   };
 }

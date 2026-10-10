@@ -15,6 +15,7 @@ type KanbanColumnProps = {
   onDrop: (status: NoteStatus) => void;
   onCyclePriority: (id: string, current: Note["priority"]) => void;
   onChangeEpic: (id: string, epicId: string | null) => void;
+  onChangeDirection: (id: string, direction: string | null) => void;
   onToggleSelect: (id: string) => void;
   onDelete: (id: string) => void;
 };
@@ -30,6 +31,7 @@ export default function KanbanColumn({
   onDrop,
   onCyclePriority,
   onChangeEpic,
+  onChangeDirection,
   onToggleSelect,
   onDelete,
 }: KanbanColumnProps) {
@@ -61,6 +63,7 @@ export default function KanbanColumn({
             onDragStart={onDragStart}
             onCyclePriority={onCyclePriority}
             onChangeEpic={onChangeEpic}
+            onChangeDirection={onChangeDirection}
             onToggleSelect={onToggleSelect}
             onDelete={onDelete}
           />

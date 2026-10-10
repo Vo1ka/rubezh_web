@@ -5,6 +5,7 @@ import type { FormEvent } from "react";
 import type { NewProposalInput } from "@/lib/proposals";
 import type { Epic } from "@/lib/epics";
 import { OWNERS } from "@/lib/owners";
+import { DirectionField } from "@/components/directions/DirectionPickers";
 
 const inputClass =
   "w-full rounded-md border bg-[var(--color-secondary-bg)] px-3 py-2 text-sm text-[var(--color-secondary-text)] placeholder:text-[var(--color-body)]";
@@ -31,6 +32,7 @@ export default function ProposalForm({
   const [proposedBy, setProposedBy] = useState("");
   const [owner, setOwner] = useState("");
   const [epicId, setEpicId] = useState("");
+  const [directions, setDirections] = useState<string[]>([]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -41,6 +43,7 @@ export default function ProposalForm({
       proposed_by: proposedBy,
       owner: (owner || null) as NewProposalInput["owner"],
       epic_id: epicId || null,
+      directions,
       source_note_id: initialSourceNoteId ?? null,
     });
     setTitle("");
@@ -48,6 +51,7 @@ export default function ProposalForm({
     setProposedBy("");
     setOwner("");
     setEpicId("");
+    setDirections([]);
     setOpen(false);
   };
 
@@ -119,6 +123,8 @@ export default function ProposalForm({
           ))}
         </select>
       </div>
+
+      <DirectionField value={directions} onChange={setDirections} />
 
       <div className="flex gap-2">
         <button

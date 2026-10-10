@@ -6,6 +6,7 @@ import type { DecisionRecord, NewDecisionInput, RecordType } from "@/lib/decisio
 import { RECORD_TYPES, STATUS_OPTIONS } from "@/lib/decisions";
 import type { Epic } from "@/lib/epics";
 import { OWNERS } from "@/lib/owners";
+import { DirectionField } from "@/components/directions/DirectionPickers";
 
 const inputClass =
   "w-full rounded-md border bg-[var(--color-secondary-bg)] px-3 py-2 text-sm text-[var(--color-secondary-text)] placeholder:text-[var(--color-body)]";
@@ -28,6 +29,7 @@ export default function DecisionForm({
   const [epicId, setEpicId] = useState("");
   const [owner, setOwner] = useState("");
   const [relatedIds, setRelatedIds] = useState<string[]>([]);
+  const [directions, setDirections] = useState<string[]>([]);
 
   const toggleRelated = (id: string) => {
     setRelatedIds((prev) =>
@@ -45,6 +47,7 @@ export default function DecisionForm({
       status,
       epic_id: epicId || null,
       related_ids: relatedIds,
+      directions,
       owner: (owner || null) as NewDecisionInput["owner"],
     });
     setTitle("");
@@ -53,6 +56,7 @@ export default function DecisionForm({
     setEpicId("");
     setOwner("");
     setRelatedIds([]);
+    setDirections([]);
     setOpen(false);
   };
 
@@ -149,6 +153,8 @@ export default function DecisionForm({
           ))}
         </select>
       </div>
+
+      <DirectionField value={directions} onChange={setDirections} />
 
       {existingRecords.length > 0 ? (
         <div>

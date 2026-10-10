@@ -14,6 +14,7 @@ import { getSectionBySlug } from "@/lib/sections";
 import EpicStatusControl from "@/components/epics/EpicStatusControl";
 import DecisionCard from "@/components/decisions/DecisionCard";
 import EpicRepoActivity from "@/components/epics/EpicRepoActivity";
+import { DirectionTags } from "@/components/directions/DirectionPickers";
 
 const solidBadge = (background: string): CSSProperties => ({
   background,
@@ -36,7 +37,7 @@ const PRIORITY_STYLE: Record<string, CSSProperties> = {
 export default function EpicDetailPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
-  const { epics, loading, error, configured, updateStatus, deleteEpic } = useEpics();
+  const { epics, loading, error, configured, updateStatus, updateDirections, deleteEpic } = useEpics();
   const { records: decisions, deleteRecord } = useDecisions();
   const { tasks: roadmapTasks } = useRoadmapTasks();
   const { notes: linkedNotes } = useNotesByEpic(params.id);
@@ -140,6 +141,8 @@ export default function EpicDetailPage() {
           {riskLabel ? (
             <span className="text-[var(--color-body)]">Риск: {riskLabel}</span>
           ) : null}
+          <span className="text-[var(--color-body)]">Направления:</span>
+          <DirectionTags value={epic.directions ?? []} onChange={(next) => updateDirections(epic.id, next)} />
         </div>
 
         {dependencies.length > 0 ? (

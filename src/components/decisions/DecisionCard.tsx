@@ -3,6 +3,7 @@ import type { DecisionRecord } from "@/lib/decisions";
 import { RECORD_TYPES, STATUS_OPTIONS } from "@/lib/decisions";
 import type { Epic } from "@/lib/epics";
 import { ownerLabel } from "@/lib/owners";
+import { DirectionTags } from "@/components/directions/DirectionPickers";
 
 const solidBadge = (background: string): CSSProperties => ({
   background,
@@ -26,11 +27,13 @@ export default function DecisionCard({
   record,
   epics,
   allRecords,
+  onChangeDirections,
   onDelete,
 }: {
   record: DecisionRecord;
   epics: Epic[];
   allRecords: DecisionRecord[];
+  onChangeDirections?: (id: string, directions: string[]) => void;
   onDelete: (id: string) => void;
 }) {
   const typeLabel = RECORD_TYPES.find((t) => t.value === record.type)?.label;
@@ -84,6 +87,13 @@ export default function DecisionCard({
           {relatedTitles.length > 0 ? `Связано: ${relatedTitles.join(", ")}` : ""}
         </p>
       )}
+
+      <div className="mt-2">
+        <DirectionTags
+          value={record.directions ?? []}
+          onChange={onChangeDirections ? (next) => onChangeDirections(record.id, next) : undefined}
+        />
+      </div>
     </div>
   );
 }

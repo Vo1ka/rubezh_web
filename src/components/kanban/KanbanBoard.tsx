@@ -9,6 +9,7 @@ import { useNotes } from "@/hooks/useNotes";
 import { useEpics } from "@/hooks/useEpics";
 import KanbanColumn from "./KanbanColumn";
 import BulkActionBar from "./BulkActionBar";
+import { DirectionFilter, NO_DIRECTION, matchesDirection } from "@/components/directions/DirectionPickers";
 
 const selectClass =
   "rounded-md border bg-[var(--color-secondary-bg)] px-2 py-1.5 text-sm text-[var(--color-secondary-text)]";
@@ -24,10 +25,12 @@ export default function KanbanBoard({ section }: { section: SectionSlug }) {
     moveNote,
     cyclePriority,
     setNoteEpic,
+    setNoteDirection,
     deleteNote,
     bulkSetStatus,
     bulkSetPriority,
     bulkSetEpic,
+    bulkSetDirection,
     bulkDelete,
   } = useNotes(section);
   const { epics } = useEpics();
@@ -35,6 +38,7 @@ export default function KanbanBoard({ section }: { section: SectionSlug }) {
   const [newTitle, setNewTitle] = useState("");
 
   const [epicFilter, setEpicFilter] = useState<string>("");
+  const [directionFilter, setDirectionFilter] = useState<string>("");
   const [priorityFilter, setPriorityFilter] = useState<NotePriority | "">("");
   const [sortMode, setSortMode] = useState<SortMode>("manual");
 
@@ -46,8 +50,9 @@ export default function KanbanBoard({ section }: { section: SectionSlug }) {
     if (epicFilter === "__none__") result = result.filter((n) => !n.epic_id);
     else if (epicFilter) result = result.filter((n) => n.epic_id === epicFilter);
     if (priorityFilter) result = result.filter((n) => n.priority === priorityFilter);
+    result = result.filter((n) => matchesDirection(directionFilter, n.direction));
     return sortNotes(result, sortMode);
-  }, [notes, epicFilter, priorityFilter, sortMode]);
+  }, [notes, epicFilter, priorityFilter, directionFilter, sortMode]);
 
   if (!configured) {
     return (
@@ -76,7 +81,8 @@ export default function KanbanBoard({ section }: { section: SectionSlug }) {
   const handleCreate = async (e: FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim()) return;
-    await createNote(newTitle);
+    // A card added while filtering by a direction lands in that direction.
+    await createNote(newTitle, directionFilter && directionFilter !== NO_DIRECTION ? directionFilter : null);
     setNewTitle("");
   };
 
@@ -132,6 +138,8 @@ export default function KanbanBoard({ section }: { section: SectionSlug }) {
           ))}
         </select>
 
+        <DirectionFilter value={directionFilter} onChange={setDirectionFilter} />
+
         <select
           value={priorityFilter}
           onChange={(e) => setPriorityFilter(e.target.value as NotePriority | "")}
@@ -179,6 +187,7 @@ export default function KanbanBoard({ section }: { section: SectionSlug }) {
           onSetStatus={(status) => bulkSetStatus(selectedArray, status)}
           onSetPriority={(priority) => bulkSetPriority(selectedArray, priority)}
           onSetEpic={(epicId) => bulkSetEpic(selectedArray, epicId)}
+          onSetDirection={(direction) => bulkSetDirection(selectedArray, direction)}
           onDelete={() => {
             bulkDelete(selectedArray);
             clearSelection();
@@ -208,6 +217,7 @@ export default function KanbanBoard({ section }: { section: SectionSlug }) {
               onDrop={handleDrop}
               onCyclePriority={cyclePriority}
               onChangeEpic={setNoteEpic}
+              onChangeDirection={setNoteDirection}
               onToggleSelect={toggleSelect}
               onDelete={deleteNote}
             />

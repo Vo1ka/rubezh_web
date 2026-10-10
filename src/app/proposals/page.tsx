@@ -9,6 +9,7 @@ import { PROPOSAL_STATUSES } from "@/lib/proposals";
 import type { ProposalStatus } from "@/lib/proposals";
 import ProposalForm from "@/components/proposals/ProposalForm";
 import ProposalCard from "@/components/proposals/ProposalCard";
+import { DirectionFilter, matchesDirection } from "@/components/directions/DirectionPickers";
 
 function ProposalsPageInner() {
   const searchParams = useSearchParams();
@@ -21,19 +22,22 @@ function ProposalsPageInner() {
     createProposal,
     updateStatus,
     updateOwner,
+    updateDirections,
     deleteProposal,
     promoteToDecision,
   } = useProposals();
   const { epics } = useEpics();
   const { records: decisions } = useDecisions();
   const [filter, setFilter] = useState<ProposalStatus | "all">("all");
+  const [directionFilter, setDirectionFilter] = useState("");
 
   const prefillTitle = searchParams.get("title") ?? "";
   const prefillDescription = searchParams.get("description") ?? "";
   const prefillSourceNoteId = searchParams.get("sourceNoteId");
 
-  const filtered =
-    filter === "all" ? proposals : proposals.filter((p) => p.status === filter);
+  const filtered = proposals.filter(
+    (p) => (filter === "all" || p.status === filter) && matchesDirection(directionFilter, p.directions)
+  );
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-10 sm:px-6">
@@ -84,6 +88,9 @@ function ProposalsPageInner() {
                 </button>
               );
             })}
+            <div className="ml-auto">
+              <DirectionFilter value={directionFilter} onChange={setDirectionFilter} />
+            </div>
           </div>
 
           {error ? <p className="text-sm text-[var(--color-title)]">Ошибка: {error}</p> : null}
@@ -103,6 +110,7 @@ function ProposalsPageInner() {
                   isValidating={validatingIds.includes(proposal.id)}
                   onChangeStatus={updateStatus}
                   onChangeOwner={updateOwner}
+                  onChangeDirections={updateDirections}
                   onPromote={promoteToDecision}
                   onDelete={deleteProposal}
                 />

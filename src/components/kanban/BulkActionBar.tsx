@@ -4,6 +4,7 @@ import { useState } from "react";
 import { STATUSES, PRIORITIES } from "@/lib/notes";
 import type { NoteStatus, NotePriority } from "@/lib/notes";
 import type { Epic } from "@/lib/epics";
+import { useDirections } from "@/hooks/useDirections";
 
 const selectClass =
   "rounded-md border bg-[var(--color-secondary-bg)] px-2 py-1.5 text-sm text-[var(--color-secondary-text)]";
@@ -15,6 +16,7 @@ export default function BulkActionBar({
   onSetStatus,
   onSetPriority,
   onSetEpic,
+  onSetDirection,
   onDelete,
   onClear,
 }: {
@@ -23,10 +25,12 @@ export default function BulkActionBar({
   onSetStatus: (status: NoteStatus) => void;
   onSetPriority: (priority: NotePriority) => void;
   onSetEpic: (epicId: string | null) => void;
+  onSetDirection: (direction: string | null) => void;
   onDelete: () => void;
   onClear: () => void;
 }) {
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const { directions } = useDirections();
 
   return (
     <div
@@ -91,6 +95,28 @@ export default function BulkActionBar({
         {epics.map((epic) => (
           <option key={epic.id} value={epic.id}>
             {epic.title}
+          </option>
+        ))}
+      </select>
+
+      <select
+        defaultValue=""
+        onChange={(e) => {
+          const value = e.target.value;
+          if (value === "__none__") onSetDirection(null);
+          else if (value) onSetDirection(value);
+          e.target.value = "";
+        }}
+        className={selectClass}
+        style={selectBorder}
+      >
+        <option value="" disabled>
+          Задать направление…
+        </option>
+        <option value="__none__">Без направления</option>
+        {directions.map((d) => (
+          <option key={d.id} value={d.id}>
+            {d.name}
           </option>
         ))}
       </select>

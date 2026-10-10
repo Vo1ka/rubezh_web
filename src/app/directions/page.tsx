@@ -2,11 +2,13 @@ import Link from "next/link";
 import { loadRegistry, REGISTRY_PATH, type Direction } from "@/lib/directions/registry";
 import { loadCommits, loadStatus } from "@/lib/directions/data";
 import { statusSection } from "@/lib/directions/status";
+import { loadBlockingCounts } from "@/lib/directions/tracker";
 import { ErrorNote, ExternalLink, FlagBadge, Muted, StateBadge, formatDate } from "@/components/directions/ui";
 
 // RW-14: the site's entry point — one row per direction from the registry.
 export default async function DirectionsPage() {
-  const registry = await loadRegistry();
+  const [registry, blocking] = await Promise.all([loadRegistry(), loadBlockingCounts()]);
+  const blockingCounts = blocking.ok ? blocking.value : {};
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 sm:px-6">
@@ -23,7 +25,7 @@ export default async function DirectionsPage() {
       {registry.ok ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {registry.directions.map((d) => (
-            <DirectionCard key={d.id} direction={d} />
+            <DirectionCard key={d.id} direction={d} blockingQuestions={blockingCounts[d.id] ?? 0} />
           ))}
         </div>
       ) : (
@@ -33,7 +35,7 @@ export default async function DirectionsPage() {
   );
 }
 
-async function DirectionCard({ direction }: { direction: Direction }) {
+async function DirectionCard({ direction, blockingQuestions }: { direction: Direction; blockingQuestions: number }) {
   const [status, commits] = await Promise.all([loadStatus(direction.id), loadCommits(direction, 1)]);
   const parsed = status.ok && status.value ? status.value.parsed : null;
   const summary = parsed ? statusSection(parsed, "Коротко") : null;
@@ -67,6 +69,7 @@ async function DirectionCard({ direction }: { direction: Direction }) {
         {!status.ok ? <FlagBadge>STATUS не прочитан</FlagBadge> : null}
         {status.ok && !status.value ? <FlagBadge>Нет STATUS</FlagBadge> : null}
         {parsed && parsed.problems.length > 0 ? <FlagBadge>Формат STATUS нарушен</FlagBadge> : null}
+        {blockingQuestions > 0 ? <FlagBadge>Блокирующих вопросов: {blockingQuestions}</FlagBadge> : null}
       </div>
 
       <dl className="mt-auto grid grid-cols-2 gap-2 text-xs text-[var(--color-body)]">

@@ -49,6 +49,7 @@ export type Note = {
   position: number;
   author: string | null;
   epic_id: string | null;
+  direction: string | null;
   created_at: string;
   updated_at: string;
 };

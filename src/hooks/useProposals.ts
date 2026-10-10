@@ -60,6 +60,7 @@ export function useProposals() {
         proposed_by: input.proposed_by?.trim() || null,
         owner: input.owner || null,
         epic_id: input.epic_id || null,
+        directions: input.directions,
         source_note_id: input.source_note_id || null,
       });
       if (insertError) setError(insertError.message);
@@ -127,6 +128,19 @@ export function useProposals() {
     [refresh]
   );
 
+  const updateDirections = useCallback(
+    async (id: string, directions: string[]) => {
+      if (!supabase) return;
+      const { error: updateError } = await supabase
+        .from("proposals")
+        .update({ directions })
+        .eq("id", id);
+      if (updateError) setError(updateError.message);
+      else await refresh();
+    },
+    [refresh]
+  );
+
   const deleteProposal = useCallback(
     async (id: string) => {
       if (!supabase) return;
@@ -159,6 +173,7 @@ export function useProposals() {
           status: overrides?.status ?? "active",
           epic_id: overrides?.epic_id ?? proposal.epic_id ?? null,
           related_ids: overrides?.related_ids ?? [],
+          directions: overrides?.directions ?? proposal.directions ?? [],
           owner: overrides?.owner ?? proposal.owner ?? null,
           proposal_id: proposal.id,
         })
@@ -191,6 +206,7 @@ export function useProposals() {
     createProposal,
     updateStatus,
     updateOwner,
+    updateDirections,
     deleteProposal,
     promoteToDecision,
   };

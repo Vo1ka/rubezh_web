@@ -6,6 +6,7 @@ import type { Epic, EpicStatus } from "@/lib/epics";
 import { RISK_LEVELS } from "@/lib/epics";
 import { ownerLabel } from "@/lib/owners";
 import EpicStatusControl from "./EpicStatusControl";
+import { DirectionTags } from "@/components/directions/DirectionPickers";
 
 const solidBadge = (background: string): CSSProperties => ({
   background,
@@ -29,11 +30,13 @@ export default function EpicCard({
   epic,
   allEpics,
   onChangeStatus,
+  onChangeDirections,
   onDelete,
 }: {
   epic: Epic;
   allEpics: Epic[];
   onChangeStatus: (id: string, status: EpicStatus) => void;
+  onChangeDirections: (id: string, directions: string[]) => void;
   onDelete: (id: string) => void;
 }) {
   const router = useRouter();
@@ -90,6 +93,10 @@ export default function EpicCard({
         {riskLabel ? (
           <span className="text-[var(--color-body)]">Риск: {riskLabel}</span>
         ) : null}
+        <DirectionTags
+          value={epic.directions ?? []}
+          onChange={(next) => onChangeDirections(epic.id, next)}
+        />
       </div>
 
       {dependencyTitles.length > 0 ? (

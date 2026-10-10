@@ -7,15 +7,18 @@ import { RECORD_TYPES } from "@/lib/decisions";
 import type { RecordType } from "@/lib/decisions";
 import DecisionCard from "@/components/decisions/DecisionCard";
 import DecisionForm from "@/components/decisions/DecisionForm";
+import { DirectionFilter, matchesDirection } from "@/components/directions/DirectionPickers";
 
 export default function DecisionsPage() {
-  const { records, loading, error, configured, createRecord, deleteRecord } =
+  const { records, loading, error, configured, createRecord, updateDirections, deleteRecord } =
     useDecisions();
   const { epics } = useEpics();
   const [filter, setFilter] = useState<RecordType | "all">("all");
+  const [directionFilter, setDirectionFilter] = useState("");
 
-  const filtered =
-    filter === "all" ? records : records.filter((r) => r.type === filter);
+  const filtered = records.filter(
+    (r) => (filter === "all" || r.type === filter) && matchesDirection(directionFilter, r.directions)
+  );
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6 px-4 py-10 sm:px-6">
@@ -61,6 +64,9 @@ export default function DecisionsPage() {
                 </button>
               );
             })}
+            <div className="ml-auto">
+              <DirectionFilter value={directionFilter} onChange={setDirectionFilter} />
+            </div>
           </div>
 
           {error ? (
@@ -79,6 +85,7 @@ export default function DecisionsPage() {
                   record={record}
                   epics={epics}
                   allRecords={records}
+                  onChangeDirections={updateDirections}
                   onDelete={deleteRecord}
                 />
               ))}

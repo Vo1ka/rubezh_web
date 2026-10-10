@@ -5,6 +5,7 @@ import type { FormEvent } from "react";
 import type { Epic, NewEpicInput } from "@/lib/epics";
 import { MVP_PRIORITIES, RISK_LEVELS } from "@/lib/epics";
 import { OWNERS } from "@/lib/owners";
+import { DirectionField } from "@/components/directions/DirectionPickers";
 
 const inputClass =
   "w-full rounded-md border bg-[var(--color-secondary-bg)] px-3 py-2 text-sm text-[var(--color-secondary-text)] placeholder:text-[var(--color-body)]";
@@ -24,6 +25,7 @@ export default function EpicForm({
   const [priority, setPriority] = useState<NewEpicInput["mvp_priority"]>("P1");
   const [risk, setRisk] = useState("");
   const [dependsOn, setDependsOn] = useState<string[]>([]);
+  const [directions, setDirections] = useState<string[]>([]);
 
   const toggleDependency = (id: string) => {
     setDependsOn((prev) =>
@@ -41,6 +43,7 @@ export default function EpicForm({
       mvp_priority: priority,
       risk_level: (risk || null) as NewEpicInput["risk_level"],
       depends_on: dependsOn,
+      directions,
     });
     setTitle("");
     setDescription("");
@@ -48,6 +51,7 @@ export default function EpicForm({
     setPriority("P1");
     setRisk("");
     setDependsOn([]);
+    setDirections([]);
     setOpen(false);
   };
 
@@ -124,6 +128,8 @@ export default function EpicForm({
           ))}
         </select>
       </div>
+
+      <DirectionField value={directions} onChange={setDirections} />
 
       {existingEpics.length > 0 ? (
         <div>

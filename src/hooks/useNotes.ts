@@ -65,7 +65,7 @@ export function useNotes(section: SectionSlug) {
   const notes = snapshot.data;
 
   const createNote = useCallback(
-    async (title: string) => {
+    async (title: string, direction: string | null = null) => {
       if (!supabase || !title.trim()) return;
       const maxPosition = notes
         .filter((n) => n.status === "backlog")
@@ -77,6 +77,7 @@ export function useNotes(section: SectionSlug) {
         status: "backlog",
         priority: "medium",
         position: maxPosition + 1,
+        direction,
       });
       if (insertError) setMutationError(insertError.message);
       else {
@@ -154,6 +155,35 @@ export function useNotes(section: SectionSlug) {
     [key]
   );
 
+  const setNoteDirection = useCallback(
+    async (id: string, direction: string | null) => {
+      if (!supabase) return;
+      const { error: updateError } = await supabase
+        .from("notes")
+        .update({ direction })
+        .eq("id", id);
+      if (updateError) setMutationError(updateError.message);
+      else {
+        setMutationError(null);
+        refreshQuery(key);
+      }
+    },
+    [key]
+  );
+
+  const bulkSetDirection = useCallback(
+    async (ids: string[], direction: string | null) => {
+      if (!supabase || ids.length === 0) return;
+      const { error: updateError } = await supabase.from("notes").update({ direction }).in("id", ids);
+      if (updateError) setMutationError(updateError.message);
+      else {
+        setMutationError(null);
+        refreshQuery(key);
+      }
+    },
+    [key]
+  );
+
   const bulkSetStatus = useCallback(
     async (ids: string[], status: NoteStatus) => {
       if (!supabase || ids.length === 0) return;
@@ -216,9 +246,11 @@ export function useNotes(section: SectionSlug) {
     cyclePriority,
     deleteNote,
     setNoteEpic,
+    setNoteDirection,
     bulkSetStatus,
     bulkSetPriority,
     bulkSetEpic,
+    bulkSetDirection,
     bulkDelete,
   };
 }

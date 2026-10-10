@@ -37,6 +37,7 @@ export type Epic = {
   status: EpicStatus;
   risk_level: RiskLevel | null;
   depends_on: string[];
+  directions: string[];
   position: number;
   created_at: string;
   updated_at: string;
@@ -49,4 +50,5 @@ export type NewEpicInput = {
   mvp_priority: MvpPriority;
   risk_level?: RiskLevel | null;
   depends_on: string[];
+  directions: string[];
 };

@@ -33,6 +33,7 @@ export type DecisionRecord = {
   status: string | null;
   epic_id: string | null;
   related_ids: string[];
+  directions: string[];
   owner: Owner | null;
   proposal_id: string | null;
   created_at: string;
@@ -46,6 +47,7 @@ export type NewDecisionInput = {
   status?: string;
   epic_id?: string | null;
   related_ids: string[];
+  directions: string[];
   owner?: Owner | null;
   proposal_id?: string | null;
 };

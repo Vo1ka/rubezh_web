@@ -7,6 +7,7 @@ import type { Epic } from "@/lib/epics";
 import type { DecisionRecord } from "@/lib/decisions";
 import { OWNERS, ownerLabel } from "@/lib/owners";
 import ProposalStatusControl from "./ProposalStatusControl";
+import { DirectionTags } from "@/components/directions/DirectionPickers";
 
 const solidBadge = (background: string): CSSProperties => ({
   background,
@@ -38,6 +39,7 @@ export default function ProposalCard({
   isValidating,
   onChangeStatus,
   onChangeOwner,
+  onChangeDirections,
   onPromote,
   onDelete,
 }: {
@@ -47,6 +49,7 @@ export default function ProposalCard({
   isValidating: boolean;
   onChangeStatus: (id: string, status: ProposalStatus) => void;
   onChangeOwner: (id: string, owner: string | null) => void;
+  onChangeDirections: (id: string, directions: string[]) => void;
   onPromote: (proposal: ProposalRecord) => void;
   onDelete: (id: string) => void;
 }) {
@@ -98,6 +101,10 @@ export default function ProposalCard({
             </option>
           ))}
         </select>
+        <DirectionTags
+          value={proposal.directions ?? []}
+          onChange={(next) => onChangeDirections(proposal.id, next)}
+        />
       </div>
 
       {isValidating ? (

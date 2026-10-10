@@ -36,6 +36,7 @@ export type ProposalRecord = {
   proposed_by: string | null;
   owner: Owner | null;
   epic_id: string | null;
+  directions: string[];
   status: ProposalStatus;
   verdict: Verdict | null;
   verdict_rationale: string | null;
@@ -55,5 +56,6 @@ export type NewProposalInput = {
   proposed_by?: string;
   owner?: Owner | null;
   epic_id?: string | null;
+  directions: string[];
   source_note_id?: string | null;
 };
